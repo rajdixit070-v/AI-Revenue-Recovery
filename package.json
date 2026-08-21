@@ -1,0 +1,24 @@
+{
+  "name": "ai-revenue-recovery",
+  "version": "1.0.0",
+  "description": "RecoverAI – AI Revenue Recovery Agent",
+  "private": true,
+  "workspaces": ["client", "server"],
+  "scripts": {
+    "dev": "concurrently \"npm run client\" \"npm run server\"",
+    "client": "npm --prefix client run dev",
+    "server": "npm --prefix server run dev",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "npm --prefix client run build",
+    "build:server": "npm --prefix server run build",
+    "seed:demo": "npm --prefix server run seed:demo",
+    "reset:demo": "node server/scripts/resetDemoData.js",
+    "test": "npm --prefix server test"
+  },
+  "keywords": [],
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "server",
+  "private": true,
+  "version": "1.0.0",
+  "description": "RecoverAI backend",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "build": "echo \"Server ready (Node.js runtime)\"",
+    "seed:demo": "node scripts/seedDemoData.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "keywords": [],
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.1",
+    "mongoose": "^8.7.0",
+    "dotenv": "^16.4.5",
+    "razorpay": "^2.9.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4",
+    "jest": "^29.7.0"
+  }
+}
