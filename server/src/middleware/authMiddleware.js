@@ -18,6 +18,7 @@ function authenticateToken(req, res, next) {
     req.user = decoded;
     next();
   } catch (err) {
+    console.error('[AUTH DEBUG ERROR]', err.message);
     return next(createError(`Authentication failed: ${err.message}`, 401));
   }
 }

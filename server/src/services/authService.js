@@ -3,7 +3,9 @@
 const crypto = require('crypto');
 const { User } = require('../models/User');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'recoverai_dev_secret_key_change_in_production_32bytes';
+function getJwtSecret() {
+  return process.env.JWT_SECRET || 'recoverai_dev_secret_key_change_in_production_32bytes';
+}
 
 function generateToken(user) {
   const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
@@ -18,7 +20,7 @@ function generateToken(user) {
     })
   ).toString('base64url');
 
-  const signature = crypto.createHmac('sha256', JWT_SECRET).update(`${header}.${payload}`).digest('base64url');
+  const signature = crypto.createHmac('sha256', getJwtSecret()).update(`${header}.${payload}`).digest('base64url');
   return `${header}.${payload}.${signature}`;
 }
 
@@ -28,7 +30,7 @@ function verifyToken(token) {
   if (parts.length !== 3) throw new Error('Malformed token');
 
   const [header, payload, signature] = parts;
-  const expectedSignature = crypto.createHmac('sha256', JWT_SECRET).update(`${header}.${payload}`).digest('base64url');
+  const expectedSignature = crypto.createHmac('sha256', getJwtSecret()).update(`${header}.${payload}`).digest('base64url');
 
   if (Buffer.byteLength(signature) !== Buffer.byteLength(expectedSignature) || !crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
     throw new Error('Invalid signature');
