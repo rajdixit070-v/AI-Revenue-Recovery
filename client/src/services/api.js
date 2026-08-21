@@ -1,14 +1,52 @@
 const API_BASE = '/api';
 
+export async function ensureAuthToken() {
+  let token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
+  if (!token) {
+    try {
+      const res = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: 'merchant@recoverai.local', password: 'SecurePassword123!' }),
+      });
+      const json = await res.json();
+      if (json.data?.token) {
+        token = json.data.token;
+        localStorage.setItem('token', token);
+      }
+    } catch (err) {
+      console.warn('[AUTH] Demo auto-login failed:', err.message);
+    }
+  }
+  return token;
+}
+
 async function request(endpoint, options = {}) {
   const url = `${API_BASE}${endpoint}`;
+  let token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
+
+  if (!token && !endpoint.includes('/auth/login') && !endpoint.includes('/auth/register') && !endpoint.includes('/health')) {
+    token = await ensureAuthToken();
+  }
+
   const headers = {
     'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...(options.headers || {}),
   };
 
   try {
-    const res = await fetch(url, { ...options, headers });
+    let res = await fetch(url, { ...options, headers });
+
+    // Handles 401 retry with freshly issued token
+    if (res.status === 401 && !endpoint.includes('/auth/login')) {
+      const newToken = await ensureAuthToken();
+      if (newToken) {
+        headers['Authorization'] = `Bearer ${newToken}`;
+        res = await fetch(url, { ...options, headers });
+      }
+    }
+
     const json = await res.json().catch(() => ({}));
     if (!res.ok) {
       const msg = json.error?.message || json.message || `Request failed with status ${res.status}`;
@@ -25,6 +63,9 @@ async function request(endpoint, options = {}) {
 }
 
 export const api = {
+  login: (credentials) => request('/auth/login', { method: 'POST', body: JSON.stringify(credentials) }),
+  register: (data) => request('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
+  getMe: () => request('/auth/me'),
   getHealth: () => request('/health'),
   getMetrics: () => request('/recovery/metrics'),
   getCases: (params = {}) => {

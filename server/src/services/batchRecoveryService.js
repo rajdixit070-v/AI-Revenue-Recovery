@@ -49,6 +49,13 @@ async function runBatch(batchId) {
 
   // Load target cases (at least 100 synthetic cases)
   const allCases = await ensureSyntheticDataset(batch.totalCases || 100);
+  
+  // Reset synthetic cases to OPEN state for fresh evaluation run
+  await RecoveryCase.updateMany(
+    { caseId: /^BATCH-CASE-/ },
+    { $set: { status: 'OPEN', recoveredAmount: 0, retryCount: 0, reminderCount: 0, escalationLevel: 0, resolvedAt: null, resolutionReason: null } }
+  );
+
   const cases = allCases.slice(0, batch.totalCases || 100);
   const policy = (await RecoveryPolicy.findOne({ enabled: true })) || (await RecoveryPolicy.findOne());
 

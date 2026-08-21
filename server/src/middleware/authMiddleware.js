@@ -8,9 +8,7 @@ function authenticateToken(req, res, next) {
   const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
 
   if (!token) {
-    // Development mode fallback: attach mock admin user if auth is optional
-    req.user = { id: 'dev_user', email: 'merchant@recoverai.local', name: 'Demo Merchant', role: 'ADMIN' };
-    return next();
+    return next(createError('Authentication required: Missing Authorization header or Bearer token', 401));
   }
 
   try {
@@ -18,7 +16,6 @@ function authenticateToken(req, res, next) {
     req.user = decoded;
     next();
   } catch (err) {
-    console.error('[AUTH DEBUG ERROR]', err.message);
     return next(createError(`Authentication failed: ${err.message}`, 401));
   }
 }

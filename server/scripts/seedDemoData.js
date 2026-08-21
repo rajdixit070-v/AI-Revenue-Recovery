@@ -99,7 +99,7 @@ async function runSeed() {
   await Customer.bulkWrite(bulkOps);
 
   // Recovery Cases
-  const recov = payments.filter(function(p) { return p.isRecoverable; }).slice(0, 70);
+  const recov = payments.filter(function(p) { return p.isRecoverable; }).slice(0, 100);
   const caseDocs = recov.map(function(pay, i) {
     const st = pick(CSTAT);
     const ws = new Date(pay.createdAt);

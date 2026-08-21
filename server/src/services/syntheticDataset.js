@@ -20,6 +20,11 @@ async function ensureSyntheticDataset(count = 100) {
     return await RecoveryCase.find({ caseId: /^BATCH-CASE-/ }).populate('customerId').populate('paymentId').sort({ caseId: 1 }).lean();
   }
 
+  // Clear partial batch records if re-generating
+  await RecoveryCase.deleteMany({ caseId: /^BATCH-CASE-/ });
+  await Customer.deleteMany({ externalCustomerId: /^cust_batch_/ });
+  await Payment.deleteMany({ externalPaymentId: /^pay_batch_/ });
+
   // Ensure default recovery policy
   let policy = await RecoveryPolicy.findOne({ enabled: true });
   if (!policy) {

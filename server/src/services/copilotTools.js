@@ -132,7 +132,7 @@ const APPROVED_TOOLS = [
     readOnly: false,
     financialImpact: false, // Safe non-financial simulation benchmark
     execute: async (params = {}) => {
-      const limit = params.caseLimit || 10;
+      const limit = params.caseLimit || 100;
       const batch = await createBatch({ name: 'Copilot Triggered Evaluation', mode: 'SIMULATION', caseLimit: limit });
       const result = await runBatch(batch.batchId);
       return {

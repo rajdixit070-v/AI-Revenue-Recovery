@@ -39,17 +39,19 @@ app.use(express.json({
   }
 }));
 
-// ── Optional Auth Middleware population ────────────────────────────────────────
-app.use(authenticateToken);
-
-// ── Routes ─────────────────────────────────────────────────────────────────────
+// ── Public Routes (Unauthenticated) ────────────────────────────────────────────
 app.use('/api', healthRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/webhooks', webhooksRouter);
+
+// ── Authentication Middleware Enforcement for Protected Endpoints ───────────────
+app.use(authenticateToken);
+
+// ── Protected Routes (Requires Valid JWT Bearer Token) ──────────────────────────
 app.use('/api/customers', customersRouter);
 app.use('/api/payments', paymentsRouter);
 app.use('/api/recovery', recoveryRouter);
 app.use('/api/audit-logs', auditLogsRouter);
-app.use('/api/webhooks', webhooksRouter);
 app.use('/api/evaluations', evaluationsRouter);
 app.use('/api/copilot', copilotRouter);
 
