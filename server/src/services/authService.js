@@ -75,9 +75,25 @@ async function loginUser({ email, password }) {
   };
 }
 
+async function changePassword({ email, currentPassword, newPassword }) {
+  if (!newPassword || newPassword.length < 8) {
+    throw new Error('New password must be at least 8 characters long');
+  }
+  const user = await User.findOne({ email: email.toLowerCase() });
+  if (!user) throw new Error('User not found');
+  if (currentPassword && !user.validPassword(currentPassword)) {
+    throw new Error('Current password is incorrect');
+  }
+  user.setPassword(newPassword);
+  await user.save();
+  return { success: true, message: 'Password updated successfully' };
+}
+
 module.exports = {
   generateToken,
   verifyToken,
   registerUser,
   loginUser,
+  changePassword,
 };
+

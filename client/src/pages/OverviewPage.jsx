@@ -54,53 +54,73 @@ export default function OverviewPage({ onNavigate }) {
         </button>
       </div>
 
-      {/* Top 4 Business Outcome Metrics */}
+      {/* Top 4 Business Outcome Metrics (Interactive & Clickable) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <MetricCard
-          title="Revenue at Risk"
-          value={formatPaiseToRupees(m.revenueAtRisk)}
-          subtext="Active cases requiring recovery"
-          icon={DollarSign}
-        />
-        <MetricCard
-          title="Recovered Revenue"
-          value={formatPaiseToRupees(m.recoveredRevenue)}
-          subtext="Confirmed recovered revenue"
-          icon={TrendingUp}
-          badgeText="Verified"
-          badgeColor="emerald"
-        />
-        <MetricCard
-          title="Revenue Recovery Rate"
-          value={`${m.revenueRecoveryRate}%`}
-          subtext={`Case Rate: ${m.caseRecoveryRate}%`}
-          icon={CheckCircle2}
-        />
-        <MetricCard
-          title="Open Recovery Cases"
-          value={m.openCases}
-          subtext={`Total cases: ${m.totalCases}`}
-          icon={Activity}
-        />
+        <div onClick={() => onNavigate('/at-risk')} className="cursor-pointer transition-transform hover:-translate-y-0.5">
+          <MetricCard
+            title="Revenue at Risk"
+            value={formatPaiseToRupees(m.revenueAtRisk)}
+            subtext="Active cases requiring recovery &rarr;"
+            icon={DollarSign}
+          />
+        </div>
+        <div onClick={() => onNavigate('/recovery-cases')} className="cursor-pointer transition-transform hover:-translate-y-0.5">
+          <MetricCard
+            title="Recovered Revenue"
+            value={formatPaiseToRupees(m.recoveredRevenue)}
+            subtext="Confirmed recovered revenue &rarr;"
+            icon={TrendingUp}
+            badgeText="Verified"
+            badgeColor="emerald"
+          />
+        </div>
+        <div onClick={() => onNavigate('/evaluations')} className="cursor-pointer transition-transform hover:-translate-y-0.5">
+          <MetricCard
+            title="Revenue Recovery Rate"
+            value={`${m.revenueRecoveryRate}%`}
+            subtext={`Benchmark: ${m.caseRecoveryRate}% &rarr;`}
+            icon={CheckCircle2}
+          />
+        </div>
+        <div onClick={() => onNavigate('/recovery-cases')} className="cursor-pointer transition-transform hover:-translate-y-0.5">
+          <MetricCard
+            title="Open Recovery Cases"
+            value={m.openCases}
+            subtext={`Total cases: ${m.totalCases} &rarr;`}
+            icon={Activity}
+          />
+        </div>
       </div>
 
-      {/* Secondary Metrics Bar */}
+      {/* Secondary Metrics Bar (All 4 Tiles Functional & Clickable) */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs">
-        <div className="p-3 border-r border-slate-100 last:border-0">
+        <div onClick={() => onNavigate('/payments')} className="p-3 border-r border-slate-100 last:border-0 cursor-pointer hover:bg-slate-50 rounded-lg transition-colors">
           <span className="text-xs font-semibold text-slate-400">Failed Payments</span>
-          <p className="text-lg font-extrabold text-slate-800 mt-0.5">{m.failedPayments}</p>
+          <p className="text-lg font-extrabold text-slate-800 mt-0.5 flex items-center justify-between">
+            <span>{m.failedPayments}</span>
+            <span className="text-[10px] text-slate-400 font-normal">&rarr;</span>
+          </p>
         </div>
-        <div className="p-3 border-r border-slate-100 last:border-0">
+        <div onClick={() => onNavigate('/at-risk')} className="p-3 border-r border-slate-100 last:border-0 cursor-pointer hover:bg-amber-50/50 rounded-lg transition-colors">
           <span className="text-xs font-semibold text-slate-400">High / Critical Risk</span>
-          <p className="text-lg font-extrabold text-amber-600 mt-0.5">{(m.highRiskCases || 0) + (m.criticalRiskCases || 0)}</p>
+          <p className="text-lg font-extrabold text-amber-600 mt-0.5 flex items-center justify-between">
+            <span>{(m.highRiskCases || 0) + (m.criticalRiskCases || 0)}</span>
+            <span className="text-[10px] text-amber-500 font-normal">&rarr;</span>
+          </p>
         </div>
-        <div className="p-3 border-r border-slate-100 last:border-0">
+        <div onClick={() => onNavigate('/policies')} className="p-3 border-r border-slate-100 last:border-0 cursor-pointer hover:bg-indigo-50/50 rounded-lg transition-colors">
           <span className="text-xs font-semibold text-slate-400">Policy Blocks</span>
-          <p className="text-lg font-extrabold text-indigo-600 mt-0.5">{m.policyBlockedCases}</p>
+          <p className="text-lg font-extrabold text-indigo-600 mt-0.5 flex items-center justify-between">
+            <span>{m.policyBlockedCases}</span>
+            <span className="text-[10px] text-indigo-500 font-normal">&rarr;</span>
+          </p>
         </div>
-        <div className="p-3">
+        <div onClick={() => onNavigate('/recovery-cases')} className="p-3 cursor-pointer hover:bg-rose-50/50 rounded-lg transition-colors">
           <span className="text-xs font-semibold text-slate-400">Escalated Cases</span>
-          <p className="text-lg font-extrabold text-rose-600 mt-0.5">{m.escalatedCases}</p>
+          <p className="text-lg font-extrabold text-rose-600 mt-0.5 flex items-center justify-between">
+            <span>{m.escalatedCases}</span>
+            <span className="text-[10px] text-rose-500 font-normal">&rarr;</span>
+          </p>
         </div>
       </div>
 

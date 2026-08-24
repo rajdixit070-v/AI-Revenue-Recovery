@@ -39,11 +39,22 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
 
   const runAIAnalysis = async (cid) => {
     setAnalyzing(true);
+    setExecutionMessage(null);
     try {
       const res = await api.aiAnalyzeCase(cid);
       setAiAnalysis(res.data);
+
+      // Refresh case document to reflect new status, score and audit log
+      const updatedCase = await api.getCaseById(cid);
+      setCaseData(updatedCase.data);
+
+      setExecutionMessage({
+        type: 'success',
+        text: `AI Re-Analysis Complete! Recommended Action: ${res.data?.aiDecision?.decision?.action || res.data?.finalRecommendation?.action} (Confidence: ${Math.round((res.data?.aiDecision?.decision?.confidence || 0.85) * 100)}%)`,
+      });
     } catch (err) {
       console.warn('AI analysis error:', err.message);
+      setExecutionMessage({ type: 'error', text: `AI analysis failed: ${err.message}` });
     } finally {
       setAnalyzing(false);
     }
@@ -179,7 +190,12 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
 
         {/* Right Column: AI & Policy Cards */}
         <div className="md:col-span-2 space-y-6">
-          <AIDecisionCard aiDecision={ai || { decision: { action: c.recommendedAction, confidence: 0.85, reason: c.diagnosis || 'Automated analysis' } }} />
+          <AIDecisionCard
+            aiDecision={ai || { decision: { action: c.recommendedAction, confidence: 0.85, reason: c.diagnosis || 'Automated analysis' } }}
+            diagnosis={aiAnalysis?.diagnosis}
+            risk={aiAnalysis?.risk}
+            policyDecision={policy}
+          />
           <PolicyDecisionCard policyDecision={policy || { allowed: true }} proposedAction={ai?.decision?.action || c.recommendedAction || 'RETRY_PAYMENT'} />
         </div>
       </div>

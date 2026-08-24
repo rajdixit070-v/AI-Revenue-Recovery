@@ -1,8 +1,9 @@
 const API_BASE = '/api';
 
-export async function ensureAuthToken() {
+export async function ensureAuthToken(force = false) {
   let token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
-  if (!token) {
+  if (!token || force) {
+    if (typeof localStorage !== 'undefined') localStorage.removeItem('token');
     try {
       const res = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
@@ -12,7 +13,10 @@ export async function ensureAuthToken() {
       const json = await res.json();
       if (json.data?.token) {
         token = json.data.token;
-        localStorage.setItem('token', token);
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem('token', token);
+          localStorage.setItem('user', JSON.stringify(json.data.user || { name: 'Demo Merchant', email: 'merchant@recoverai.local', role: 'ADMIN' }));
+        }
       }
     } catch (err) {
       console.warn('[AUTH] Demo auto-login failed:', err.message);
@@ -40,7 +44,7 @@ async function request(endpoint, options = {}) {
 
     // Handles 401 retry with freshly issued token
     if (res.status === 401 && !endpoint.includes('/auth/login')) {
-      const newToken = await ensureAuthToken();
+      const newToken = await ensureAuthToken(true);
       if (newToken) {
         headers['Authorization'] = `Bearer ${newToken}`;
         res = await fetch(url, { ...options, headers });
@@ -64,10 +68,12 @@ async function request(endpoint, options = {}) {
 
 export const api = {
   login: (credentials) => request('/auth/login', { method: 'POST', body: JSON.stringify(credentials) }),
+  changePassword: (data) => request('/auth/change-password', { method: 'POST', body: JSON.stringify(data) }),
   register: (data) => request('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
   getMe: () => request('/auth/me'),
   getHealth: () => request('/health'),
   getMetrics: () => request('/recovery/metrics'),
+  getAtRiskCases: () => request('/recovery/at-risk'),
   getCases: (params = {}) => {
     const query = new URLSearchParams(params).toString();
     return request(`/recovery/cases${query ? `?${query}` : ''}`);

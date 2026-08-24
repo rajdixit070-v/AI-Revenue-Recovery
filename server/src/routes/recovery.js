@@ -73,10 +73,10 @@ router.get('/metrics', async (req, res, next) => {
     const caseRecoveryRate = totalCases > 0 ? Number(((casesByStatus.RECOVERED / totalCases) * 100).toFixed(1)) : 0;
 
     const needsAttention = allCases
-      .filter(rc => rc.riskLevel === 'CRITICAL' || rc.riskLevel === 'HIGH' || rc.status === 'ESCALATED' || activeStatuses.includes(rc.status))
-      .slice(0, 5);
+      .filter(rc => rc.status === 'ESCALATED' || ['CRITICAL', 'HIGH'].includes(rc.riskLevel))
+      .slice(0, 10);
 
-    const isRazorpayConfigured = Boolean(process.env.RAZORPAY_KEY_ID && !process.env.RAZORPAY_KEY_ID.includes('your_'));
+    const isRazorpayConfigured = !!process.env.RAZORPAY_KEY_ID && !process.env.RAZORPAY_KEY_ID.includes('your_');
     const environment = isRazorpayConfigured ? 'RAZORPAY TEST MODE' : 'SIMULATION MODE';
 
     res.json({
@@ -98,6 +98,25 @@ router.get('/metrics', async (req, res, next) => {
         casesByIssueType,
         environment,
       },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/at-risk', async (req, res, next) => {
+  try {
+    const activeStatuses = ['OPEN', 'ANALYZING', 'ACTION_PENDING', 'IN_RECOVERY', 'ESCALATED'];
+    const cases = await RecoveryCase.find({ status: { $in: activeStatuses } })
+      .populate('customerId', 'name email status lifetimeValue successfulPayments failedPayments')
+      .populate('paymentId', 'amount currency status failureReason paymentMethod attemptCount')
+      .sort({ riskScore: -1, amountAtRisk: -1 })
+      .lean();
+
+    res.json({
+      status: 'success',
+      data: cases,
+      total: cases.length,
     });
   } catch (err) {
     next(err);
@@ -216,10 +235,41 @@ router.post('/cases/:caseId/ai-analyze', async (req, res, next) => {
     const { diagnoseCase } = require('../services/recoveryDiagnosisService');
 
     const risk = calculateRiskScore({ amountAtRisk: recoveryCase.amountAtRisk, payment, customer, recoveryCase });
+    const calculatedScore = typeof risk.score === 'number' ? risk.score : (risk.riskScore || 20);
+    const calculatedLevel = risk.level || risk.riskLevel || recoveryCase.riskLevel || 'LOW';
+
+    // Normalize risk object for response
+    risk.riskScore = calculatedScore;
+    risk.riskLevel = calculatedLevel;
+
     const diagnosis = diagnoseCase({ recoveryCase, payment, customer, riskAssessment: risk });
 
     const aiResult = await getDecision({ recoveryCase, payment, customer, riskAssessment: risk, diagnosis, policy });
     const policyDecision = evaluateRecoveryAction({ recoveryCase, proposedAction: aiResult.decision.action, policy, customer });
+
+    // Persist AI findings and bounded action directly to recoveryCase document
+    recoveryCase.riskScore = calculatedScore;
+    recoveryCase.riskLevel = calculatedLevel;
+    recoveryCase.recommendedAction = policyDecision.allowed ? aiResult.decision.action : 'STOP';
+    recoveryCase.diagnosis = diagnosis.probableCause || diagnosis.reasoning;
+    if (['OPEN', 'ANALYZING'].includes(recoveryCase.status)) {
+      recoveryCase.status = 'ACTION_PENDING';
+    }
+    await recoveryCase.save();
+
+    await logAuditEvent({
+      caseId: recoveryCase._id,
+      eventType: 'AI_ANALYSIS_COMPLETED',
+      actorType: 'AI_AGENT',
+      message: `AI re-analyzed case: ${recoveryCase.recommendedAction} (Confidence: ${Math.round((aiResult.decision.confidence || 0.85) * 100)}%)`,
+      reason: diagnosis.probableCause,
+      metadata: {
+        diagnosis: diagnosis.probableCause,
+        strategy: diagnosis.recommendedStrategy,
+        confidence: aiResult.decision.confidence,
+        signals: diagnosis.signals,
+      },
+    });
 
     res.json({
       status: 'success',
@@ -234,7 +284,7 @@ router.post('/cases/:caseId/ai-analyze', async (req, res, next) => {
           allowedByPolicy: policyDecision.allowed,
           violations: policyDecision.violations,
         },
-        executionAllowed: false,
+        executionAllowed: policyDecision.allowed,
       },
     });
   } catch (err) {
@@ -288,12 +338,19 @@ router.post('/cases/:caseId/execute', async (req, res, next) => {
       payment,
     });
 
+    // Advance status to IN_RECOVERY if not already terminal
+    if (!['RECOVERED', 'CLOSED', 'EXPIRED'].includes(recoveryCase.status)) {
+      recoveryCase.status = 'IN_RECOVERY';
+      await recoveryCase.save();
+    }
+
     res.json({
       status: 'success',
-      message: `Recovery action '${proposedAction}' executed successfully in Test Mode`,
+      message: `Recovery action '${proposedAction}' executed successfully in Test Mode. Reference: ${result.providerReference || 'N/A'}`,
       data: {
         caseId: recoveryCase.caseId,
         action: proposedAction,
+        status: recoveryCase.status,
         execution: result,
       },
     });

@@ -1,7 +1,7 @@
 'use strict';
 
 const express = require('express');
-const { loginUser, registerUser } = require('../services/authService');
+const { loginUser, registerUser, changePassword } = require('../services/authService');
 const { createError } = require('../middleware/errorHandler');
 
 const router = express.Router();
@@ -14,6 +14,18 @@ router.post('/login', async (req, res, next) => {
     res.json({ status: 'success', data: result });
   } catch (err) {
     return next(createError(err.message, 401));
+  }
+});
+
+router.post('/change-password', async (req, res, next) => {
+  try {
+    const { email, currentPassword, newPassword } = req.body;
+    const targetEmail = email || (req.user && req.user.email) || 'merchant@recoverai.local';
+    if (!newPassword) return next(createError('New password is required', 400));
+    const result = await changePassword({ email: targetEmail, currentPassword, newPassword });
+    res.json({ status: 'success', data: result });
+  } catch (err) {
+    return next(createError(err.message, 400));
   }
 });
 

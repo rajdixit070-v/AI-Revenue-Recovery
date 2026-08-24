@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import MainLayout from './layouts/MainLayout';
+import LoginPage from './pages/LoginPage';
 import OverviewPage from './pages/OverviewPage';
 import RecoveryCasesPage from './pages/RecoveryCasesPage';
 import CaseDetailPage from './pages/CaseDetailPage';
@@ -16,6 +17,7 @@ import AgentRunConsolePage from './pages/AgentRunConsolePage';
 import { api } from './services/api';
 
 export default function App() {
+  const [token, setToken] = useState(localStorage.getItem('token'));
   const [currentPath, setCurrentPath] = useState(window.location.pathname || '/');
   const [environment, setEnvironment] = useState('SIMULATION MODE');
 
@@ -26,20 +28,28 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    api.getMetrics()
-      .then(res => {
-        if (res.data?.environment) setEnvironment(res.data.environment);
-      })
-      .catch(() => {});
-  }, []);
+    if (token) {
+      api.getMetrics()
+        .then(res => {
+          if (res.data?.environment) setEnvironment(res.data.environment);
+        })
+        .catch(() => {});
+    }
+  }, [token]);
 
   const navigate = (path) => {
     window.history.pushState({}, '', path);
     setCurrentPath(path);
+    window.scrollTo(0, 0);
   };
 
+  // If user is not authenticated, show Admin Login / Change Password screen
+  if (!token) {
+    return <LoginPage onLoginSuccess={() => setToken(localStorage.getItem('token'))} />;
+  }
+
   const getTitle = () => {
-    if (currentPath === '/') return 'Overview Dashboard';
+    if (currentPath === '/' || currentPath === '/overview' || currentPath === '/dashboard') return 'Overview Dashboard';
     if (currentPath === '/recovery-cases') return 'Recovery Cases';
     if (currentPath.startsWith('/recovery-cases/')) return 'Recovery Case Details';
     if (currentPath === '/at-risk') return 'Revenue At Risk Priority Queue';
@@ -56,7 +66,7 @@ export default function App() {
   };
 
   const renderContent = () => {
-    if (currentPath === '/' || currentPath === '/dashboard') {
+    if (currentPath === '/' || currentPath === '/overview' || currentPath === '/dashboard') {
       return <OverviewPage onNavigate={navigate} />;
     }
     if (currentPath === '/recovery-cases') {
@@ -86,7 +96,7 @@ export default function App() {
       return <CustomersPage />;
     }
     if (currentPath === '/ai-decisions') {
-      return <AIDecisionsPage />;
+      return <AIDecisionsPage onNavigate={navigate} />;
     }
     if (currentPath === '/policies') {
       return <PoliciesPage />;
@@ -111,3 +121,4 @@ export default function App() {
     </MainLayout>
   );
 }
+

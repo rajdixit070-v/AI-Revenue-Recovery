@@ -1,14 +1,16 @@
 import React from 'react';
-import { Brain, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
+import { Brain, CheckCircle2, AlertCircle, Sparkles, Stethoscope, ShieldCheck, ArrowRight } from 'lucide-react';
 
-export default function AIDecisionCard({ aiDecision, policyDecision }) {
+export default function AIDecisionCard({ aiDecision, diagnosis, risk, policyDecision }) {
   if (!aiDecision) return null;
 
   const decision = aiDecision.decision || aiDecision;
   const confidencePct = Math.round((decision.confidence || 0) * 100);
+  const diag = diagnosis || decision.diagnosis || {};
 
   return (
-    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-5">
+      {/* Header */}
       <div className="flex items-center justify-between pb-4 border-b border-slate-100">
         <div className="flex items-center gap-2.5">
           <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600">
@@ -16,7 +18,7 @@ export default function AIDecisionCard({ aiDecision, policyDecision }) {
           </div>
           <div>
             <h3 className="text-sm font-bold text-slate-900">AI Recovery Recommendation</h3>
-            <p className="text-xs text-slate-500">Provider: {aiDecision.provider || 'AI Engine'}</p>
+            <p className="text-xs text-slate-500">Provider: <strong className="text-indigo-600">{aiDecision.provider || 'Gemini AI Engine'}</strong></p>
           </div>
         </div>
         <div className="flex items-center gap-1.5 px-3 py-1 bg-indigo-50 border border-indigo-100 rounded-full">
@@ -25,10 +27,39 @@ export default function AIDecisionCard({ aiDecision, policyDecision }) {
         </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Step-by-Step AI Reasoning Trail */}
+      <div className="bg-slate-50/80 p-4 rounded-xl border border-slate-200/80 space-y-3">
+        <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
+          <Stethoscope className="w-4 h-4 text-indigo-600" />
+          <span>AI Root-Cause Diagnosis & Analysis:</span>
+        </div>
+        <div className="text-xs text-slate-700 space-y-1.5 pl-6">
+          <p>
+            <strong className="text-slate-900">Primary Cause:</strong> {diag.probableCause || diag.primaryCause || 'Payment failure detected'}
+          </p>
+          {diag.recommendedStrategy && (
+            <p>
+              <strong className="text-slate-900">Recommended Strategy:</strong> {diag.recommendedStrategy}
+            </p>
+          )}
+          {Array.isArray(diag.reasoning) && diag.reasoning.length > 0 && (
+            <div className="pt-1">
+              <strong className="text-slate-900 block mb-1">Evidence & Signals:</strong>
+              <ul className="list-disc list-inside space-y-0.5 text-slate-600">
+                {diag.reasoning.map((r, i) => (
+                  <li key={i}>{r}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Proposed Action & Expected Outcome */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
           <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">Recommended Action</span>
-          <div className="mt-1 text-lg font-extrabold text-slate-900">{decision.action || 'STOP'}</div>
+          <div className="mt-1 text-lg font-extrabold text-indigo-700">{decision.action || 'STOP'}</div>
           <p className="mt-2 text-xs text-slate-600 leading-relaxed">{decision.reason}</p>
         </div>
 
@@ -52,3 +83,4 @@ export default function AIDecisionCard({ aiDecision, policyDecision }) {
     </div>
   );
 }
+
