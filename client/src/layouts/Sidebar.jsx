@@ -21,7 +21,7 @@ export default function Sidebar({ currentPath, onNavigate }) {
       <div>
         {/* Brand Header */}
         <div
-          onClick={() => onNavigate('/home')}
+          onClick={() => onNavigate('/')}
           className="p-6 border-b border-slate-800 flex items-center gap-3 cursor-pointer hover:bg-slate-800/40 transition-colors"
         >
           <div className="p-2.5 bg-gradient-to-tr from-indigo-600 to-cyan-400 text-white rounded-xl shadow-lg shadow-indigo-600/30">
@@ -40,9 +40,9 @@ export default function Sidebar({ currentPath, onNavigate }) {
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const isActive =
-              (item.path === '/home' && (currentPath === '/' || currentPath === '/home')) ||
-              (item.path === '/overview' && currentPath === '/overview') ||
-              (item.path !== '/home' && item.path !== '/overview' && currentPath.startsWith(item.path));
+              item.path === '/'
+                ? (currentPath === '/' || currentPath === '/overview' || currentPath === '/dashboard')
+                : currentPath.startsWith(item.path);
 
             return (
               <button

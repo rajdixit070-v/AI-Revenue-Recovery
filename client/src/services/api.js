@@ -83,6 +83,10 @@ export const api = {
   aiAnalyzeCase: (id) => request(`/recovery/cases/${id}/ai-analyze`, { method: 'POST' }),
   executeCase: (id, action) => request(`/recovery/cases/${id}/execute`, { method: 'POST', body: JSON.stringify({ action }) }),
   simulateAction: (id, action) => request(`/recovery/cases/${id}/simulate-action`, { method: 'POST', body: JSON.stringify({ action }) }),
+  simulateFailure: (data) => request('/recovery/simulate-failure', { method: 'POST', body: JSON.stringify(data) }),
+  simulatePaymentSuccess: (caseId) => request(`/recovery/cases/${caseId}/simulate-payment-success`, { method: 'POST' }),
+  getHinglishScript: (caseId) => request(`/recovery/cases/${caseId}/hinglish-script`, { method: 'POST' }),
+  setPromiseToPay: (caseId, promiseDate) => request(`/recovery/cases/${caseId}/promise-to-pay`, { method: 'POST', body: JSON.stringify({ promiseDate }) }),
   getPayments: (params = {}) => {
     const query = new URLSearchParams(params).toString();
     return request(`/payments${query ? `?${query}` : ''}`);

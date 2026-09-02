@@ -62,7 +62,7 @@ async function processCopilotMessage({ message, context = {}, user }) {
   const apiKey = process.env.GEMINI_API_KEY;
 
   // 1. Attempt Gemini AI Tool Selection if Gemini AI mode is active and API key exists
-  if (aiMode === 'gemini' && apiKey && !apiKey.includes('your_')) {
+  if ((aiMode === 'gemini' || aiMode === 'live') && apiKey && !apiKey.includes('your_')) {
     try {
       const rawAiToolOutput = await geminiProvider.generateContent(
         TOOL_SELECTION_SYSTEM_PROMPT,

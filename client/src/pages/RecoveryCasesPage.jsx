@@ -6,7 +6,8 @@ import RiskBadge from '../components/RiskBadge';
 import LoadingState from '../components/LoadingState';
 import ErrorState from '../components/ErrorState';
 import EmptyState from '../components/EmptyState';
-import { Search, Filter, ArrowRight, RefreshCw } from 'lucide-react';
+import SimulateFailureModal from '../components/SimulateFailureModal';
+import { Search, Filter, ArrowRight, RefreshCw, Zap } from 'lucide-react';
 
 export default function RecoveryCasesPage({ onNavigate }) {
   const [cases, setCases] = useState([]);
@@ -18,6 +19,7 @@ export default function RecoveryCasesPage({ onNavigate }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [showSimModal, setShowSimModal] = useState(false);
 
   const loadCases = async () => {
     setLoading(true);
@@ -67,8 +69,16 @@ export default function RecoveryCasesPage({ onNavigate }) {
           />
         </div>
 
-        {/* Filters */}
+        {/* Filters and New Simulation Button */}
         <div className="flex flex-wrap items-center gap-3 text-xs">
+          <button
+            onClick={() => setShowSimModal(true)}
+            className="px-4 py-2 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold rounded-xl shadow-md shadow-amber-600/25 flex items-center gap-1.5 transition-all cursor-pointer"
+          >
+            <Zap className="w-3.5 h-3.5 fill-white" />
+            <span>Simulate Live Failure</span>
+          </button>
+
           <select
             value={filterRisk}
             onChange={(e) => setFilterRisk(e.target.value)}
@@ -97,11 +107,17 @@ export default function RecoveryCasesPage({ onNavigate }) {
             <option value="CLOSED">Closed</option>
           </select>
 
-          <button onClick={loadCases} className="p-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-600 transition-colors">
+          <button onClick={loadCases} className="p-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-600 transition-colors cursor-pointer">
             <RefreshCw className="w-4 h-4" />
           </button>
         </div>
       </div>
+
+      <SimulateFailureModal
+        isOpen={showSimModal}
+        onClose={() => setShowSimModal(false)}
+        onSuccess={(newCaseId) => onNavigate(`/recovery-cases/${newCaseId}`)}
+      />
 
       {/* Table */}
       {loading ? (

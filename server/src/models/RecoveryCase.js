@@ -100,6 +100,7 @@ const recoveryCaseSchema = new mongoose.Schema(
     lastActionAt: { type: Date, default: null },
     resolvedAt: { type: Date, default: null },
     resolutionReason: { type: String, default: null },
+    promiseToPayDate: { type: Date, default: null },
     _isDemoData: { type: Boolean, default: false, select: false },
   },
   { timestamps: true }

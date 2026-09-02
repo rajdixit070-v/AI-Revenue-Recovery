@@ -92,55 +92,67 @@ export default function AIDecisionsPage({ onNavigate }) {
         </select>
       </div>
 
-      {/* Decision Audit Table */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-slate-50 border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-              <th className="py-3.5 px-6">Case ID</th>
-              <th className="py-3.5 px-6">Customer</th>
-              <th className="py-3.5 px-6">Diagnosis & Root Cause</th>
-              <th className="py-3.5 px-6">Risk Level</th>
-              <th className="py-3.5 px-6">AI Recommendation</th>
-              <th className="py-3.5 px-6">Policy Validation</th>
-              <th className="py-3.5 px-6 text-right">Action</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 text-xs">
-            {filteredCases.map((c) => (
-              <tr key={c._id} className="hover:bg-slate-50/60 transition-colors">
-                <td className="py-4 px-6 font-mono font-bold text-slate-900">{c.caseId}</td>
-                <td className="py-4 px-6 font-semibold text-slate-800">{c.customerId?.name || 'Customer'}</td>
-                <td className="py-4 px-6 text-slate-600 font-medium">
-                  <span className="block font-semibold text-slate-800">{c.issueType}</span>
-                  <span className="text-[11px] text-slate-400">{c.diagnosis || 'Automated case analysis'}</span>
-                </td>
-                <td className="py-4 px-6">
-                  <RiskBadge level={c.riskLevel} score={c.riskScore} />
-                </td>
-                <td className="py-4 px-6 font-extrabold text-indigo-700">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-indigo-50 border border-indigo-100 rounded-lg text-indigo-700">
-                    <Sparkles className="w-3.5 h-3.5 text-indigo-500" /> {c.recommendedAction || 'STOP'}
-                  </span>
-                </td>
-                <td className="py-4 px-6">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> Policy Approved
-                  </span>
-                </td>
-                <td className="py-4 px-6 text-right">
-                  <button
-                    onClick={() => onNavigate && onNavigate(`/recovery-cases/${c.caseId}`)}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800"
-                  >
-                    Details <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                </td>
+      {/* Decision Audit Table / Empty State */}
+      {cases.length === 0 ? (
+        <div className="bg-white p-12 rounded-2xl border border-slate-200/80 shadow-xs text-center space-y-3">
+          <div className="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 mx-auto flex items-center justify-center">
+            <Brain className="w-7 h-7" />
+          </div>
+          <h4 className="text-sm font-bold text-slate-900">No AI Decisions Logged Yet</h4>
+          <p className="text-xs text-slate-500 max-w-md mx-auto">
+            Database is clean. When failed transactions occur, Gemini AI model diagnoses, policy clearances, and confidence scores will appear here.
+          </p>
+        </div>
+      ) : (
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                <th className="py-3.5 px-6">Case ID</th>
+                <th className="py-3.5 px-6">Customer</th>
+                <th className="py-3.5 px-6">Diagnosis & Root Cause</th>
+                <th className="py-3.5 px-6">Risk Level</th>
+                <th className="py-3.5 px-6">AI Recommendation</th>
+                <th className="py-3.5 px-6">Policy Validation</th>
+                <th className="py-3.5 px-6 text-right">Action</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="divide-y divide-slate-100 text-xs">
+              {filteredCases.map((c) => (
+                <tr key={c._id} className="hover:bg-slate-50/60 transition-colors">
+                  <td className="py-4 px-6 font-mono font-bold text-slate-900">{c.caseId}</td>
+                  <td className="py-4 px-6 font-semibold text-slate-800">{c.customerId?.name || 'Customer'}</td>
+                  <td className="py-4 px-6 text-slate-600 font-medium">
+                    <span className="block font-semibold text-slate-800">{c.issueType}</span>
+                    <span className="text-[11px] text-slate-400">{c.diagnosis || 'Automated case analysis'}</span>
+                  </td>
+                  <td className="py-4 px-6">
+                    <RiskBadge level={c.riskLevel} score={c.riskScore} />
+                  </td>
+                  <td className="py-4 px-6 font-extrabold text-indigo-700">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-indigo-50 border border-indigo-100 rounded-lg text-indigo-700">
+                      <Sparkles className="w-3.5 h-3.5 text-indigo-500" /> {c.recommendedAction || 'STOP'}
+                    </span>
+                  </td>
+                  <td className="py-4 px-6">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Policy Approved
+                    </span>
+                  </td>
+                  <td className="py-4 px-6 text-right">
+                    <button
+                      onClick={() => onNavigate && onNavigate(`/recovery-cases/${c.caseId}`)}
+                      className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800 cursor-pointer"
+                    >
+                      Details <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

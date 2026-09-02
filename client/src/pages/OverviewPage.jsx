@@ -6,12 +6,14 @@ import StatusBadge from '../components/StatusBadge';
 import RiskBadge from '../components/RiskBadge';
 import LoadingState from '../components/LoadingState';
 import ErrorState from '../components/ErrorState';
-import { ShieldAlert, TrendingUp, DollarSign, Activity, AlertTriangle, ArrowRight, CheckCircle2, Sliders } from 'lucide-react';
+import { ShieldAlert, TrendingUp, DollarSign, Activity, AlertTriangle, ArrowRight, CheckCircle2, Sliders, Zap } from 'lucide-react';
+import SimulateFailureModal from '../components/SimulateFailureModal';
 
 export default function OverviewPage({ onNavigate }) {
   const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showSimModal, setShowSimModal] = useState(false);
 
   const loadMetrics = async () => {
     setLoading(true);
@@ -38,7 +40,7 @@ export default function OverviewPage({ onNavigate }) {
   return (
     <div className="space-y-8">
       {/* Top Banner Tagline */}
-      <div className="bg-gradient-to-r from-indigo-900 to-slate-900 text-white p-6 rounded-2xl shadow-sm flex items-center justify-between">
+      <div className="bg-gradient-to-r from-indigo-900 to-slate-900 text-white p-6 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <span className="text-xs font-semibold uppercase tracking-wider text-indigo-300">RecoverAI Platform</span>
           <h2 className="text-xl font-extrabold mt-1">Recover revenue before it disappears.</h2>
@@ -46,13 +48,28 @@ export default function OverviewPage({ onNavigate }) {
             Automated detection, AI root-cause diagnosis, and policy-bounded recovery execution with full auditability.
           </p>
         </div>
-        <button
-          onClick={() => onNavigate('/recovery-cases')}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-xs transition-colors shrink-0"
-        >
-          View All Recovery Cases &rarr;
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowSimModal(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white text-xs font-bold rounded-xl shadow-md shadow-amber-600/30 transition-all shrink-0 cursor-pointer"
+          >
+            <Zap className="w-4 h-4 fill-white" />
+            <span>Simulate Live Failure</span>
+          </button>
+          <button
+            onClick={() => onNavigate('/recovery-cases')}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-xs transition-colors shrink-0 cursor-pointer"
+          >
+            <span>View Cases</span> &rarr;
+          </button>
+        </div>
       </div>
+
+      <SimulateFailureModal
+        isOpen={showSimModal}
+        onClose={() => setShowSimModal(false)}
+        onSuccess={(newCaseId) => onNavigate(`/recovery-cases/${newCaseId}`)}
+      />
 
       {/* Top 4 Business Outcome Metrics (Interactive & Clickable) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">

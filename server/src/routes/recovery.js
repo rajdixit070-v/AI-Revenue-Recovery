@@ -395,4 +395,232 @@ router.post('/cases/:caseId/simulate-action', async (req, res, next) => {
   }
 });
 
+router.post('/simulate-failure', async (req, res, next) => {
+  try {
+    const {
+      customerName = 'Rahul Sharma',
+      customerEmail = 'rahul.sharma@example.com',
+      amountInRupees = 4999,
+      issueType = 'PAYMENT_FAILURE',
+      failureCode = 'INSUFFICIENT_FUNDS',
+    } = req.body;
+
+    const amountInPaise = Math.round(Number(amountInRupees) * 100);
+
+    let customer = await Customer.findOne({ email: customerEmail.toLowerCase() });
+    if (!customer) {
+      customer = new Customer({
+        externalCustomerId: `cust_live_${Date.now()}`,
+        name: customerName,
+        email: customerEmail.toLowerCase(),
+        phone: '+919876543210',
+        status: 'ACTIVE',
+        lifetimeValue: 2500000,
+        successfulPayments: 3,
+        failedPayments: 1,
+        _isDemoData: true,
+      });
+      await customer.save();
+    } else {
+      customer.failedPayments = (customer.failedPayments || 0) + 1;
+      await customer.save();
+    }
+
+    const payment = new Payment({
+      customerId: customer._id,
+      externalPaymentId: `pay_sim_${Date.now()}`,
+      providerOrderId: `order_sim_${Date.now()}`,
+      amount: amountInPaise,
+      currency: 'INR',
+      status: 'FAILED',
+      paymentMethod: 'UPI',
+      failureCode,
+      failureReason: failureCode === 'INSUFFICIENT_FUNDS' ? 'Insufficient balance in bank account' : 'Payment dropped by customer during OTP verification',
+      attemptCount: 1,
+      _isDemoData: true,
+    });
+    await payment.save();
+
+    const caseCount = await RecoveryCase.countDocuments();
+    const caseId = `CASE-LIVE-${String(caseCount + 1).padStart(4, '0')}`;
+
+    const recoveryCase = new RecoveryCase({
+      caseId,
+      customerId: customer._id,
+      paymentId: payment._id,
+      issueType,
+      amountAtRisk: amountInPaise,
+      recoveredAmount: 0,
+      riskScore: 35,
+      riskLevel: 'MEDIUM',
+      status: 'OPEN',
+      recommendedAction: 'RETRY_PAYMENT',
+      diagnosis: null,
+      recoveryWindowExpiresAt: new Date(Date.now() + 7 * 24 * 3600 * 1000),
+      _isDemoData: true,
+    });
+    await recoveryCase.save();
+
+    await logAuditEvent({
+      caseId: recoveryCase._id,
+      eventType: 'CASE_CREATED',
+      actorType: 'SYSTEM',
+      message: `Simulated failed payment detected: ${issueType} for ₹${amountInRupees} (${customerName})`,
+      metadata: { caseId, amount: amountInPaise, issueType, failureCode },
+    });
+
+    res.status(201).json({
+      status: 'success',
+      message: `New live failed payment simulated: ${caseId}`,
+      data: {
+        caseId: recoveryCase.caseId,
+        id: recoveryCase._id,
+        amountAtRisk: amountInPaise,
+        status: recoveryCase.status,
+        customerName: customer.name,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/cases/:caseId/simulate-payment-success', async (req, res, next) => {
+  try {
+    const caseId = req.params.caseId;
+    const recoveryCase = await RecoveryCase.findOne({
+      $or: [{ caseId }, { _id: caseId.match(/^[0-9a-fA-F]{24}$/) ? caseId : null }],
+    });
+
+    if (!recoveryCase) return next(createError('Recovery case not found', 404));
+
+    if (recoveryCase.status === 'RECOVERED') {
+      return res.json({
+        status: 'success',
+        message: 'Case is already recovered',
+        data: recoveryCase,
+      });
+    }
+
+    const recoverAmount = recoveryCase.amountAtRisk;
+    recoveryCase.recoveredAmount = recoverAmount;
+    recoveryCase.status = 'RECOVERED';
+    recoveryCase.recoveryCompletedAt = new Date();
+    await recoveryCase.save();
+
+    if (recoveryCase.customerId) {
+      await Customer.findByIdAndUpdate(recoveryCase.customerId, {
+        $inc: { successfulPayments: 1, lifetimeValue: recoverAmount },
+      });
+    }
+
+    if (recoveryCase.paymentId) {
+      await Payment.findByIdAndUpdate(recoveryCase.paymentId, {
+        status: 'CAPTURED',
+      });
+    }
+
+    await logAuditEvent({
+      caseId: recoveryCase._id,
+      eventType: 'PAYMENT_RECOVERY_CONFIRMED',
+      actorType: 'WEBHOOK',
+      message: `Razorpay payment webhook verified: Recovered ₹${recoverAmount / 100} successfully!`,
+      metadata: {
+        recoveredAmount: recoverAmount,
+        provider: 'RAZORPAY',
+        verified: true,
+      },
+    });
+
+    res.json({
+      status: 'success',
+      message: `Payment confirmed via Razorpay Webhook! Recovered ₹${recoverAmount / 100}`,
+      data: recoveryCase,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/cases/:caseId/hinglish-script', async (req, res, next) => {
+  try {
+    const caseId = req.params.caseId;
+    const recoveryCase = await RecoveryCase.findOne({
+      $or: [{ caseId }, { _id: caseId.match(/^[0-9a-fA-F]{24}$/) ? caseId : null }],
+    }).populate('customerId').populate('paymentId');
+
+    if (!recoveryCase) return next(createError('Recovery case not found', 404));
+
+    const customerName = recoveryCase.customerId?.name || 'Customer';
+    const amountInRupees = (recoveryCase.amountAtRisk / 100).toLocaleString('en-IN');
+    const paymentLink = `https://rzp.io/i/rec_${recoveryCase.caseId.toLowerCase()}`;
+    const issue = recoveryCase.issueType || 'PAYMENT_FAILURE';
+
+    let hinglishMessage = `Namaste ${customerName} ji! 🙏\nHumne dekha ki aapka ₹${amountInRupees} ka payment kisi technical issue ke chalte ruk gaya tha. Aap niche diye gaye secure Razorpay link se bina kisi rukawat ke 1-click me payment complete kar sakte hain:\n🔗 ${paymentLink}\n\nAapki convenience ke liye ye link active hai. Koi bhi query ho to reply karein.`;
+
+    let voiceScript = `Hello ${customerName} ji, namaste! Main RecoverAI payment desk se bol raha hoon. Aapka ₹${amountInRupees} ka order checkout complete nahi ho paya tha. Humne aapke WhatsApp par direct 1-click payment link bhej diya hai. Kya aap abhi pay karna chahenge?`;
+
+    const geminiProvider = require('../services/ai/geminiProvider');
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (apiKey && !apiKey.includes('your_')) {
+      try {
+        const sysPrompt = `You are an empathetic Indian revenue recovery assistant. Write a polite Hinglish (Hindi + English) WhatsApp recovery message and a 20-second phone call voice script. Respond ONLY with valid JSON matching: { "hinglishMessage": string, "voiceScript": string }`;
+        const userPrompt = `Customer Name: ${customerName}, Amount: ₹${amountInRupees}, Issue: ${issue}, Payment Link: ${paymentLink}`;
+        const aiOut = await geminiProvider.generateContent(sysPrompt, userPrompt);
+        const parsed = JSON.parse(aiOut.replace(/```json|```/g, '').trim());
+        if (parsed.hinglishMessage) hinglishMessage = parsed.hinglishMessage;
+        if (parsed.voiceScript) voiceScript = parsed.voiceScript;
+      } catch (err) {
+        console.warn('Gemini script fallback:', err.message);
+      }
+    }
+
+    res.json({
+      status: 'success',
+      data: {
+        caseId: recoveryCase.caseId,
+        customerName,
+        amountInRupees,
+        paymentLink,
+        hinglishMessage,
+        voiceScript,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/cases/:caseId/promise-to-pay', async (req, res, next) => {
+  try {
+    const caseId = req.params.caseId;
+    const { promiseDate } = req.body;
+
+    const recoveryCase = await RecoveryCase.findOne({
+      $or: [{ caseId }, { _id: caseId.match(/^[0-9a-fA-F]{24}$/) ? caseId : null }],
+    });
+
+    if (!recoveryCase) return next(createError('Recovery case not found', 404));
+
+    recoveryCase.promiseToPayDate = promiseDate ? new Date(promiseDate) : new Date(Date.now() + 3 * 86400000);
+    await recoveryCase.save();
+
+    await logAuditEvent({
+      caseId: recoveryCase._id,
+      eventType: 'POLICY_EVALUATION_PASSED',
+      actorType: 'AI_AGENT',
+      message: `Customer promise-to-pay commitment registered for ${recoveryCase.promiseToPayDate.toLocaleDateString()}`,
+      metadata: { promiseToPayDate: recoveryCase.promiseToPayDate },
+    });
+
+    res.json({
+      status: 'success',
+      message: `Promise-to-pay commitment saved for ${recoveryCase.promiseToPayDate.toLocaleDateString()}`,
+      data: recoveryCase,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;

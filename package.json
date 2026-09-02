@@ -13,6 +13,7 @@
     "build:server": "npm --prefix server run build",
     "seed:demo": "npm --prefix server run seed:demo",
     "reset:demo": "node server/scripts/resetDemoData.js",
+    "db:clean": "node server/scripts/cleanDatabase.js",
     "test": "npm --prefix server test"
   },
   "keywords": [],
