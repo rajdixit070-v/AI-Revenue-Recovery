@@ -27,8 +27,8 @@ router.get('/metrics', async (req, res, next) => {
   try {
     const activeStatuses = ['OPEN', 'ANALYZING', 'ACTION_PENDING', 'IN_RECOVERY'];
 
-    const mainCaseFilter = { isBatchSynthetic: { $ne: true }, caseId: { $not: /^BATCH-CASE-/ }, _isDemoData: { $ne: true } };
-    const mainPaymentFilter = { isBatchSynthetic: { $ne: true }, externalPaymentId: { $not: /^pay_batch_/ }, _isDemoData: { $ne: true } };
+    const mainCaseFilter = { isBatchSynthetic: { $ne: true }, caseId: { $not: /^BATCH-CASE-/ } };
+    const mainPaymentFilter = { isBatchSynthetic: { $ne: true }, externalPaymentId: { $not: /^pay_batch_/ } };
 
     const [allCases, payments, blockedAuditLogs] = await Promise.all([
       RecoveryCase.find(mainCaseFilter).populate('customerId', 'name email').populate('paymentId').lean(),
@@ -162,7 +162,7 @@ router.get('/metrics', async (req, res, next) => {
 router.get('/at-risk', async (req, res, next) => {
   try {
     const activeStatuses = ['OPEN', 'ANALYZING', 'ACTION_PENDING', 'IN_RECOVERY', 'ESCALATED'];
-    const mainFilter = { isBatchSynthetic: { $ne: true }, caseId: { $not: /^BATCH-CASE-/ }, _isDemoData: { $ne: true } };
+    const mainFilter = { isBatchSynthetic: { $ne: true }, caseId: { $not: /^BATCH-CASE-/ } };
     const cases = await RecoveryCase.find({ status: { $in: activeStatuses }, ...mainFilter })
       .populate('customerId', 'name email status lifetimeValue successfulPayments failedPayments')
       .populate('paymentId', 'amount currency status failureReason paymentMethod attemptCount')
@@ -198,7 +198,7 @@ router.get('/cases', async (req, res, next) => {
     const limit = Math.min(MAX_PAGE_SIZE, Math.max(1, parseInt(req.query.limit) || DEFAULT_PAGE_SIZE));
     const skip = (page - 1) * limit;
 
-    const filter = { isBatchSynthetic: { $ne: true }, caseId: { $not: /^BATCH-CASE-/ }, _isDemoData: { $ne: true } };
+    const filter = { isBatchSynthetic: { $ne: true }, caseId: { $not: /^BATCH-CASE-/ } };
     if (req.query.status) filter.status = req.query.status;
     if (req.query.riskLevel) filter.riskLevel = req.query.riskLevel;
     if (req.query.issueType) filter.issueType = req.query.issueType;
