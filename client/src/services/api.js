@@ -90,6 +90,8 @@ export const api = {
   getHinglishScript: (caseId) => request(`/recovery/cases/${caseId}/hinglish-script`, { method: 'POST' }),
   setPromiseToPay: (caseId, promiseDate, amount) => request(`/recovery/cases/${caseId}/promise-to-pay`, { method: 'POST', body: JSON.stringify({ promiseDate, amount }) }),
   sequenceMandate: (caseId) => request(`/recovery/cases/${caseId}/mandate-sequence`, { method: 'POST' }),
+  clearDemoData: () => request('/recovery/clear-demo', { method: 'POST' }),
+  seedDemoData: () => request('/recovery/seed-demo', { method: 'POST' }),
   getPayments: (params = {}) => {
     const query = new URLSearchParams(params).toString();
     return request(`/payments${query ? `?${query}` : ''}`);

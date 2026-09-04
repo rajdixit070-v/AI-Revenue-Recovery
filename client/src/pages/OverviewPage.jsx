@@ -200,7 +200,7 @@ export default function OverviewPage({ onNavigate }) {
           <div className="p-3.5 bg-indigo-500/10 rounded-xl border border-indigo-500/20 text-center">
             <span className="text-[10px] uppercase font-bold text-indigo-400 block">2. AI Analyzed</span>
             <span className="text-sm font-black text-indigo-200 block mt-1">{funnel.aiAnalyzed.count} Cases</span>
-            <span className="text-[10px] text-indigo-300 font-medium">Gemini 3.6</span>
+            <span className="text-[10px] text-indigo-300 font-medium">Gemini 2.5</span>
           </div>
 
           <div className="p-3.5 bg-white/[0.02] rounded-xl border border-white/[0.06] text-center">

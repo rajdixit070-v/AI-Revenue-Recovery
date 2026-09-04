@@ -50,10 +50,10 @@ export default function Topbar({ title, environment = 'SIMULATION MODE', current
             <Menu className="w-4 h-4" />
           </button>
         )}
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <span className="text-xs font-medium text-slate-400 hidden sm:inline">RecoverAI</span>
-          <ChevronRight className="w-3.5 h-3.5 text-slate-400 hidden sm:inline" />
-          <h2 className="text-sm md:text-base font-bold text-white tracking-tight flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+          <span className="text-xs font-semibold text-slate-400 hidden sm:inline shrink-0">RecoverAI</span>
+          <ChevronRight className="w-3.5 h-3.5 text-slate-400 hidden sm:inline shrink-0" />
+          <h2 className="text-sm md:text-base font-extrabold text-white tracking-tight truncate max-w-[180px] sm:max-w-xs md:max-w-md">
             {title}
           </h2>
         </div>

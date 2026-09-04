@@ -942,4 +942,46 @@ router.post('/cases/:caseId/mandate-sequence', async (req, res, next) => {
   }
 });
 
+/**
+ * POST /api/recovery/clear-demo
+ * Safely clears synthetic demo cases, payments, and customers from the database.
+ */
+router.post('/clear-demo', async (req, res, next) => {
+  try {
+    const c = await Customer.deleteMany({ _isDemoData: true });
+    const p = await Payment.deleteMany({ _isDemoData: true });
+    const rc = await RecoveryCase.deleteMany({ _isDemoData: true });
+    const ra = await RecoveryAction.deleteMany({ _isDemoData: true });
+    const a = await AuditLog.deleteMany({ _isDemoData: true });
+
+    res.json({
+      status: 'success',
+      message: 'Demo dataset cleared cleanly.',
+      data: { customers: c.deletedCount, payments: p.deletedCount, cases: rc.deletedCount, actions: ra.deletedCount },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * POST /api/recovery/seed-demo
+ * Seeds realistic demonstration cases into MongoDB.
+ */
+router.post('/seed-demo', async (req, res, next) => {
+  try {
+    const { execSync } = require('child_process');
+    const path = require('path');
+    const scriptPath = path.resolve(__dirname, '../../scripts/seedDemoData.js');
+    execSync(`node "${scriptPath}"`, { stdio: 'inherit' });
+
+    res.json({
+      status: 'success',
+      message: 'Realistic demo dataset seeded successfully.',
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;
