@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 /**
  * Centralized Express error handler.
@@ -17,7 +17,7 @@ function errorHandler(err, req, res, next) { // eslint-disable-line no-unused-va
   if (isDev) {
     console.error('[ERROR]', err);
   } else {
-    console.error([ERROR]  );
+    console.error('[ERROR]', message);
   }
 
   const body = {

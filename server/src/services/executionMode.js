@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 /**
  * Central Execution Mode Helper
@@ -9,11 +9,16 @@
 function isRazorpayConfigured() {
   const keyId = process.env.RAZORPAY_KEY_ID;
   const keySecret = process.env.RAZORPAY_KEY_SECRET;
+  if (!keyId || !keySecret) return false;
+  
+  const dummyStrings = ['your_', 'sample', 'placeholder', 'dummy', 'xxxx', 'test_key'];
+  const isKeyDummy = dummyStrings.some(d => keyId.toLowerCase().includes(d));
+  const isSecretDummy = dummyStrings.some(d => keySecret.toLowerCase().includes(d));
+  
   return Boolean(
-    keyId &&
-    keySecret &&
-    !keyId.includes('your_') &&
-    !keySecret.includes('your_')
+    !isKeyDummy &&
+    !isSecretDummy &&
+    keyId.startsWith('rzp_test_')
   );
 }
 

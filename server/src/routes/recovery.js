@@ -411,7 +411,7 @@ router.post('/cases/:caseId/execute', async (req, res, next) => {
 
     res.json({
       status: 'success',
-      message: `Recovery action '${proposedAction}' executed successfully in Test Mode. Reference: ${result.providerReference || 'N/A'}`,
+      message: `Recovery action '${proposedAction}' executed successfully in ${result.mode || 'Execution'} Mode. Reference: ${result.providerReference || 'N/A'}`,
       data: {
         caseId: recoveryCase.caseId,
         action: proposedAction,
@@ -420,7 +420,9 @@ router.post('/cases/:caseId/execute', async (req, res, next) => {
       },
     });
   } catch (err) {
-    next(err);
+    const errorMsg = err.error?.description || err.message || 'Action execution failed';
+    const status = err.statusCode === 401 ? 502 : (err.statusCode || err.status || 500);
+    return next(createError(errorMsg, status));
   }
 });
 

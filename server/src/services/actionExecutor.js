@@ -30,8 +30,8 @@ async function executeAction(action, context = {}) {
   }
 
   const isConfigured = isRazorpayConfigured();
-  // Preserve case's executionMode if already set, else calculate cleanly
-  const executionMode = recoveryCase.executionMode || (isConfigured ? 'RAZORPAY_TEST_MODE' : 'SIMULATION');
+  // If credentials are not configured, safely fall back to SIMULATION
+  const executionMode = isConfigured ? (recoveryCase.executionMode || 'RAZORPAY_TEST_MODE') : 'SIMULATION';
 
   let razorpayResult = null;
   let notificationResult = null;

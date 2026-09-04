@@ -18,11 +18,16 @@ function getCredentials() {
   const keySecret = process.env.RAZORPAY_KEY_SECRET;
   const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
 
+  const dummyStrings = ['your_', 'sample', 'placeholder', 'dummy', 'xxxx', 'test_key'];
+  const isKeyDummy = keyId ? dummyStrings.some(d => keyId.toLowerCase().includes(d)) : true;
+  const isSecretDummy = keySecret ? dummyStrings.some(d => keySecret.toLowerCase().includes(d)) : true;
+
   const isConfigured = Boolean(
     keyId &&
     keySecret &&
-    !keyId.includes('your_') &&
-    !keySecret.includes('your_')
+    !isKeyDummy &&
+    !isSecretDummy &&
+    keyId.startsWith('rzp_test_')
   );
 
   return { keyId, keySecret, webhookSecret, isConfigured };

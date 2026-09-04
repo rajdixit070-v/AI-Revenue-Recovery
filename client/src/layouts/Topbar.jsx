@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import EnvironmentIndicator from '../components/EnvironmentIndicator';
-import { User, LogIn, LogOut, ShieldCheck, CheckCircle2, ChevronRight, Sparkles, Layers } from 'lucide-react';
+import { User, LogIn, LogOut, ShieldCheck, CheckCircle2, ChevronRight, Sparkles, Layers, Menu } from 'lucide-react';
 import { ensureAuthToken } from '../services/api';
 
-export default function Topbar({ title, environment = 'SIMULATION MODE', currentPath = '/', onNavigate }) {
+export default function Topbar({ title, environment = 'SIMULATION MODE', currentPath = '/', onNavigate, onToggleMobile }) {
   const [user, setUser] = useState(null);
   const [showMenu, setShowMenu] = useState(false);
 
@@ -38,14 +38,25 @@ export default function Topbar({ title, environment = 'SIMULATION MODE', current
   };
 
   return (
-    <header className="h-16 bg-[#0B101E]/80 backdrop-blur-xl border-b border-white/[0.06] px-6 flex items-center justify-between sticky top-0 z-30">
-      {/* Breadcrumb & Title */}
-      <div className="flex items-center gap-2">
-        <span className="text-xs font-medium text-slate-400">RecoverAI</span>
-        <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-        <h2 className="text-sm md:text-base font-bold text-white tracking-tight flex items-center gap-2">
-          {title}
-        </h2>
+    <header className="h-16 bg-[#0B101E]/80 backdrop-blur-xl border-b border-white/[0.06] px-4 md:px-6 flex items-center justify-between sticky top-0 z-30">
+      {/* Mobile Hamburger & Breadcrumb & Title */}
+      <div className="flex items-center gap-3">
+        {onToggleMobile && (
+          <button
+            onClick={onToggleMobile}
+            className="lg:hidden p-2 text-slate-400 hover:text-white rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] transition-colors cursor-pointer"
+            aria-label="Toggle Navigation Menu"
+          >
+            <Menu className="w-4 h-4" />
+          </button>
+        )}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <span className="text-xs font-medium text-slate-400 hidden sm:inline">RecoverAI</span>
+          <ChevronRight className="w-3.5 h-3.5 text-slate-400 hidden sm:inline" />
+          <h2 className="text-sm md:text-base font-bold text-white tracking-tight flex items-center gap-2">
+            {title}
+          </h2>
+        </div>
       </div>
 
       {/* Right Controls */}
