@@ -8,6 +8,7 @@ const { RecoveryAction } = require('../models/RecoveryAction');
 const { Payment } = require('../models/Payment');
 const { logAuditEvent } = require('./auditService');
 const razorpayService = require('./razorpayService');
+const notificationService = require('./notificationService');
 
 async function executeAction(action, context = {}) {
   const { caseId, recoveryCase, customer, payment } = context;
@@ -21,13 +22,17 @@ async function executeAction(action, context = {}) {
   if (targetAmount <= 0) {
     return {
       executed: false,
-      mode: 'TEST_MODE',
+      mode: 'SIMULATION',
       action,
       reason: 'Amount at risk already zero or fully recovered.',
     };
   }
 
+  const isRazorpayConfigured = !!process.env.RAZORPAY_KEY_ID && !process.env.RAZORPAY_KEY_ID.includes('your_');
+  const executionMode = isRazorpayConfigured ? 'RAZORPAY_TEST_MODE' : 'SIMULATION';
+
   let razorpayResult = null;
+  let notificationResult = null;
   let providerReference = null;
   let actionType = action;
 
@@ -50,8 +55,8 @@ async function executeAction(action, context = {}) {
       payment.externalOrderId = razorpayResult.id;
       await payment.save();
     }
-  } else if (action === 'CREATE_PAYMENT_LINK' || action === 'SEND_REMINDER') {
-    actionType = action === 'SEND_REMINDER' ? 'SEND_REMINDER' : 'CREATE_PAYMENT_LINK';
+  } else if (action === 'CREATE_PAYMENT_LINK') {
+    actionType = 'CREATE_PAYMENT_LINK';
     razorpayResult = await razorpayService.createPaymentLink({
       amount: targetAmount,
       currency: 'INR',
@@ -65,6 +70,16 @@ async function executeAction(action, context = {}) {
       notes: { caseId: recoveryCase.caseId },
     });
     providerReference = razorpayResult.id;
+  } else if (action === 'SEND_REMINDER') {
+    actionType = 'SEND_REMINDER';
+    notificationResult = await notificationService.sendRecoveryReminder({
+      recipient: customer || { email: 'customer@example.com', phone: '' },
+      channel: 'WHATSAPP',
+      message: `Namaste, your pending invoice for case ${recoveryCase.caseId} is awaiting clearance.`,
+      caseId: recoveryCase.caseId,
+      amount: targetAmount,
+    });
+    providerReference = notificationResult.providerReference;
   } else if (action === 'ESCALATE') {
     actionType = 'ESCALATE';
     providerReference = `escalation_${recoveryCase.caseId}_${Date.now()}`;
@@ -73,49 +88,68 @@ async function executeAction(action, context = {}) {
     providerReference = `stop_${recoveryCase.caseId}`;
   }
 
-  // Record RecoveryAction document
+  // Record RecoveryAction document with strict executionMode
   const recoveryActionDoc = new RecoveryAction({
     caseId: recoveryCase._id,
     actionType,
     actorType: 'SYSTEM',
-    reason: `Automated ${action} execution via Razorpay Test Mode`,
+    reason: `Automated ${action} execution via ${executionMode}`,
     status: 'EXECUTING',
     attemptNumber: (recoveryCase.retryCount || 0) + 1,
     amountTargeted: targetAmount,
     amountRecovered: 0,
     providerReference,
+    executionMode,
     metadata: {
-      provider: 'RAZORPAY',
-      mode: 'TEST_MODE',
+      provider: action === 'SEND_REMINDER' ? 'NOTIFICATION_GATEWAY' : 'RAZORPAY',
+      mode: executionMode,
       razorpayOutput: razorpayResult,
+      notificationOutput: notificationResult,
     },
     startedAt: new Date(),
-    _isDemoData: true,
+    _isDemoData: !isRazorpayConfigured,
   });
 
-  await recoveryActionDoc.save();
+  const mongoose = require('mongoose');
+  if (mongoose.connection.readyState === 1) {
+    await recoveryActionDoc.save();
+  }
 
   // Increment counters on case
   if (action === 'RETRY_PAYMENT') recoveryCase.retryCount = (recoveryCase.retryCount || 0) + 1;
   if (action === 'SEND_REMINDER') recoveryCase.reminderCount = (recoveryCase.reminderCount || 0) + 1;
   if (action === 'ESCALATE') recoveryCase.escalationLevel = (recoveryCase.escalationLevel || 0) + 1;
   recoveryCase.lastActionAt = new Date();
-  await recoveryCase.save();
+  recoveryCase.executionMode = executionMode;
+
+  if (mongoose.connection.readyState === 1 && typeof recoveryCase.save === 'function') {
+    await recoveryCase.save();
+  }
+
+  const auditMessage =
+    action === 'RETRY_PAYMENT'
+      ? `Recovery payment attempt created on Razorpay (${providerReference}). Awaiting customer payment.`
+      : action === 'SEND_REMINDER'
+      ? `Recovery reminder notification queued in simulation (${notificationResult?.channel || 'WHATSAPP'}).`
+      : action === 'CREATE_PAYMENT_LINK'
+      ? `Payment link created on Razorpay (${providerReference}). Awaiting customer checkout.`
+      : `Executed action ${action} (provider ref: ${providerReference})`;
 
   await logAuditEvent({
     caseId: recoveryCase._id,
     eventType: action === 'RETRY_PAYMENT' ? 'RAZORPAY_ORDER_CREATED' : 'RECOVERY_ACTION_EXECUTED',
     actorType: 'SYSTEM',
-    message: `Executed action ${action} (provider ref: ${providerReference})`,
-    metadata: { providerReference, action, amountTargeted: targetAmount },
+    message: auditMessage,
+    metadata: { providerReference, action, amountTargeted: targetAmount, executionMode },
   });
 
   return {
     executed: true,
-    mode: 'TEST_MODE',
+    mode: executionMode,
     action,
     providerReference,
     razorpayResult,
+    notificationResult,
     recoveryActionId: recoveryActionDoc._id,
   };
 }

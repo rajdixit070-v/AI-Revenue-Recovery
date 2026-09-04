@@ -4,6 +4,7 @@
  * Audit Service
  */
 
+const mongoose = require('mongoose');
 const { AuditLog } = require('../models/AuditLog');
 
 async function logAuditEvent(params = {}) {
@@ -40,6 +41,10 @@ async function logAuditEvent(params = {}) {
     timestamp: new Date(),
     _isDemoData: true,
   });
+
+  if (mongoose.connection.readyState !== 1) {
+    return auditEntry;
+  }
 
   return await auditEntry.save();
 }

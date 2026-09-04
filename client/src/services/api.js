@@ -87,7 +87,8 @@ export const api = {
   simulateFailure: (data) => request('/recovery/simulate-failure', { method: 'POST', body: JSON.stringify(data) }),
   simulatePaymentSuccess: (caseId) => request(`/recovery/cases/${caseId}/simulate-payment-success`, { method: 'POST' }),
   getHinglishScript: (caseId) => request(`/recovery/cases/${caseId}/hinglish-script`, { method: 'POST' }),
-  setPromiseToPay: (caseId, promiseDate) => request(`/recovery/cases/${caseId}/promise-to-pay`, { method: 'POST', body: JSON.stringify({ promiseDate }) }),
+  setPromiseToPay: (caseId, promiseDate, amount) => request(`/recovery/cases/${caseId}/promise-to-pay`, { method: 'POST', body: JSON.stringify({ promiseDate, amount }) }),
+  sequenceMandate: (caseId) => request(`/recovery/cases/${caseId}/mandate-sequence`, { method: 'POST' }),
   getPayments: (params = {}) => {
     const query = new URLSearchParams(params).toString();
     return request(`/payments${query ? `?${query}` : ''}`);

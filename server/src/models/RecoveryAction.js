@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 const mongoose = require('mongoose');
 
@@ -60,6 +60,12 @@ const recoveryActionSchema = new mongoose.Schema(
     metadata: { type: mongoose.Schema.Types.Mixed, default: {} },
     startedAt: { type: Date, default: null },
     completedAt: { type: Date, default: null },
+    executionMode: {
+      type: String,
+      enum: ['RAZORPAY_TEST_MODE', 'SIMULATION'],
+      default: 'SIMULATION',
+      index: true,
+    },
     _isDemoData: { type: Boolean, default: false, select: false },
   },
   { timestamps: true }

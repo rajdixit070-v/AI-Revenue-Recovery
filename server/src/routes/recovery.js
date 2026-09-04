@@ -547,6 +547,9 @@ router.post('/cases/:caseId/simulate-payment-success', async (req, res, next) =>
     recoveryCase.recoveredAmount = recoverAmount;
     recoveryCase.status = 'RECOVERED';
     recoveryCase.recoveryCompletedAt = new Date();
+    if (recoveryCase.promiseToPayStatus === 'PENDING') {
+      recoveryCase.promiseToPayStatus = 'FULFILLED';
+    }
     await recoveryCase.save();
 
     if (recoveryCase.customerId) {
@@ -635,7 +638,7 @@ router.post('/cases/:caseId/hinglish-script', async (req, res, next) => {
 router.post('/cases/:caseId/promise-to-pay', async (req, res, next) => {
   try {
     const caseId = req.params.caseId;
-    const { promiseDate } = req.body;
+    const { promiseDate, amount } = req.body;
 
     const recoveryCase = await RecoveryCase.findOne({
       $or: [{ caseId }, { _id: caseId.match(/^[0-9a-fA-F]{24}$/) ? caseId : null }],
@@ -644,20 +647,95 @@ router.post('/cases/:caseId/promise-to-pay', async (req, res, next) => {
     if (!recoveryCase) return next(createError('Recovery case not found', 404));
 
     recoveryCase.promiseToPayDate = promiseDate ? new Date(promiseDate) : new Date(Date.now() + 3 * 86400000);
+    recoveryCase.promiseToPayAmount = typeof amount === 'number' ? amount : recoveryCase.amountAtRisk;
+    recoveryCase.promiseToPayStatus = 'PENDING';
     await recoveryCase.save();
 
     await logAuditEvent({
       caseId: recoveryCase._id,
       eventType: 'POLICY_EVALUATION_PASSED',
       actorType: 'AI_AGENT',
-      message: `Customer promise-to-pay commitment registered for ${recoveryCase.promiseToPayDate.toLocaleDateString()}`,
-      metadata: { promiseToPayDate: recoveryCase.promiseToPayDate },
+      message: `Customer promise-to-pay commitment registered for ${recoveryCase.promiseToPayDate.toLocaleDateString()} (Amount: ₹${(recoveryCase.promiseToPayAmount / 100).toFixed(2)})`,
+      metadata: { promiseToPayDate: recoveryCase.promiseToPayDate, promiseAmount: recoveryCase.promiseToPayAmount, status: 'PENDING' },
     });
 
     res.json({
       status: 'success',
       message: `Promise-to-pay commitment saved for ${recoveryCase.promiseToPayDate.toLocaleDateString()}`,
       data: recoveryCase,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Bounded Mandate Retry Sequencer (Phase 12)
+router.post('/cases/:caseId/mandate-sequence', async (req, res, next) => {
+  try {
+    const caseId = req.params.caseId;
+    const recoveryCase = await RecoveryCase.findOne({
+      $or: [{ caseId }, { _id: caseId.match(/^[0-9a-fA-F]{24}$/) ? caseId : null }],
+    });
+
+    if (!recoveryCase) return next(createError('Recovery case not found', 404));
+
+    const currentRetries = recoveryCase.retryCount || 0;
+    const MAX_MANDATE_RETRIES = 3;
+
+    if (currentRetries >= MAX_MANDATE_RETRIES) {
+      // Stopping rule triggered: Do not create infinite loops
+      recoveryCase.status = 'ESCALATED';
+      recoveryCase.resolutionReason = 'MAX_MANDATE_RETRIES_EXCEEDED';
+      await recoveryCase.save();
+
+      await logAuditEvent({
+        caseId: recoveryCase._id,
+        eventType: 'STOPPING_RULE_TRIGGERED',
+        actorType: 'SYSTEM',
+        message: `Mandate retry limit (${MAX_MANDATE_RETRIES}) reached. Workflow stopped and escalated to operations.`,
+        reason: 'MAX_RETRIES_EXCEEDED',
+        metadata: { currentRetries, limit: MAX_MANDATE_RETRIES },
+      });
+
+      return res.json({
+        status: 'stopped',
+        message: `Stopping rule enforced: Maximum retries (${MAX_MANDATE_RETRIES}) reached. Case escalated.`,
+        data: { caseId: recoveryCase.caseId, status: recoveryCase.status, retryCount: currentRetries, stopped: true },
+      });
+    }
+
+    // Sequence next step
+    recoveryCase.retryCount = currentRetries + 1;
+    recoveryCase.status = 'IN_RECOVERY';
+    recoveryCase.lastActionAt = new Date();
+    await recoveryCase.save();
+
+    const stepNames = [
+      'Step 1 (0h): Soft Decline Retry via Primary Bank Rail',
+      'Step 2 (Salary Cycle): 1st-5th of Month Synchronized Mandate Debit',
+      'Step 3 (+48h): Alternate UPI Autopay WhatsApp Switch Link Dispatched',
+    ];
+
+    const currentStepName = stepNames[currentRetries] || 'Mandate Retry Attempt';
+
+    await logAuditEvent({
+      caseId: recoveryCase._id,
+      eventType: 'RECOVERY_ACTION_EXECUTED',
+      actorType: 'SYSTEM',
+      message: `Executed ${currentStepName}. Attempt ${recoveryCase.retryCount} of ${MAX_MANDATE_RETRIES}.`,
+      metadata: { attempt: recoveryCase.retryCount, limit: MAX_MANDATE_RETRIES, step: currentStepName },
+    });
+
+    res.json({
+      status: 'success',
+      message: `Sequenced ${currentStepName}`,
+      data: {
+        caseId: recoveryCase.caseId,
+        retryCount: recoveryCase.retryCount,
+        maxRetries: MAX_MANDATE_RETRIES,
+        stepName: currentStepName,
+        status: recoveryCase.status,
+      },
     });
   } catch (err) {
     next(err);

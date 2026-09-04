@@ -10,7 +10,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import LoadingState from '../components/LoadingState';
 import ErrorState from '../components/ErrorState';
 import RazorpayCheckoutModal from '../components/RazorpayCheckoutModal';
-import { Play, Sparkles, ShieldCheck, DollarSign, ArrowLeft, CheckCircle2, Zap, RefreshCw, Bot, Check, MessageSquare, PhoneCall, Calendar, Copy, CreditCard, Layers, Clock } from 'lucide-react';
+import { Play, Sparkles, ShieldCheck, DollarSign, ArrowLeft, CheckCircle2, Zap, RefreshCw, Bot, Check, MessageSquare, PhoneCall, Calendar, Copy, CreditCard, Layers, Clock, AlertCircle } from 'lucide-react';
 
 export default function CaseDetailPage({ caseId, onNavigate }) {
   const [caseData, setCaseData] = useState(null);
@@ -19,6 +19,7 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
   const [analyzing, setAnalyzing] = useState(false);
   const [executing, setExecuting] = useState(false);
   const [paying, setPaying] = useState(false);
+  const [sequencingMandate, setSequencingMandate] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [error, setError] = useState(null);
@@ -60,7 +61,7 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
 
       setExecutionMessage({
         type: 'success',
-        text: `🤖 Google Gemini AI Diagnosis Complete! Recommended: ${res.data?.aiDecision?.decision?.action || res.data?.finalRecommendation?.action} (Confidence: ${Math.round((res.data?.aiDecision?.decision?.confidence || 0.85) * 100)}%)`,
+        text: `🤖 AI Diagnosis Complete! Recommended: ${res.data?.aiDecision?.decision?.action || res.data?.finalRecommendation?.action} (Confidence: ${Math.round((res.data?.aiDecision?.decision?.confidence || 0.85) * 100)}%)`,
       });
     } catch (err) {
       console.warn('AI analysis error:', err.message);
@@ -78,7 +79,7 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
       const res = await api.executeCase(caseId, targetAction);
       setExecutionMessage({
         type: 'success',
-        text: `🚀 ${res.message || 'Razorpay Test Mode recovery executed!'}`,
+        text: `🚀 ${res.message || 'Recovery attempt created. Awaiting payment.'}`,
       });
       setShowConfirm(false);
       loadCase(true);
@@ -97,13 +98,30 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
       const res = await api.simulatePaymentSuccess(caseId);
       setExecutionMessage({
         type: 'celebration',
-        text: `🎉 Verified Recovery! Customer completed payment. Recovered ${formatPaiseToRupees(c.amountAtRisk)} via Razorpay Webhook!`,
+        text: `🎉 Verified Recovery! Customer completed payment. Recovered ${formatPaiseToRupees(c.amountAtRisk)} via verified Razorpay Webhook!`,
       });
       loadCase(true);
     } catch (err) {
       setExecutionMessage({ type: 'error', text: err.message || 'Failed to simulate payment webhook' });
     } finally {
       setPaying(false);
+    }
+  };
+
+  const handleSequenceMandate = async () => {
+    setSequencingMandate(true);
+    setExecutionMessage(null);
+    try {
+      const res = await api.sequenceMandate(caseId);
+      setExecutionMessage({
+        type: res.status === 'stopped' ? 'error' : 'success',
+        text: res.message,
+      });
+      loadCase(true);
+    } catch (err) {
+      setExecutionMessage({ type: 'error', text: err.message });
+    } finally {
+      setSequencingMandate(false);
     }
   };
 
@@ -123,7 +141,7 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
     e.preventDefault();
     if (!ptpDate) return;
     try {
-      await api.setPromiseToPay(caseId, ptpDate);
+      await api.setPromiseToPay(caseId, ptpDate, c.amountAtRisk);
       setPtpSuccess(`Promise-to-Pay registered for ${new Date(ptpDate).toLocaleDateString()}`);
       loadCase(true);
     } catch (err) {
@@ -175,7 +193,9 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
             <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 animate-bounce" />
           ) : executionMessage.type === 'success' ? (
             <Sparkles className="w-5 h-5 text-indigo-600 shrink-0" />
-          ) : null}
+          ) : (
+            <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
+          )}
           <span>{executionMessage.text}</span>
         </div>
       )}
@@ -183,13 +203,29 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
       {/* Hero Case Header */}
       <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 flex-wrap">
             <h2 className="text-xl font-extrabold text-slate-900 font-mono">{c.caseId}</h2>
             <StatusBadge status={c.status} />
             <RiskBadge level={c.riskLevel} score={c.riskScore} />
+
+            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider border ${
+              c.executionMode === 'RAZORPAY_TEST_MODE'
+                ? 'bg-blue-50 text-blue-800 border-blue-200'
+                : 'bg-slate-100 text-slate-700 border-slate-200'
+            }`}>
+              {c.executionMode === 'RAZORPAY_TEST_MODE' ? 'Razorpay Test Mode' : 'Simulation'}
+            </span>
+
             {c.promiseToPayDate && (
-              <span className="px-2.5 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 rounded-full text-[11px] font-bold flex items-center gap-1">
-                <Calendar className="w-3 h-3 text-amber-600" /> PTP: {new Date(c.promiseToPayDate).toLocaleDateString()}
+              <span className={`px-2.5 py-0.5 border rounded-full text-[11px] font-bold flex items-center gap-1 ${
+                c.promiseToPayStatus === 'FULFILLED'
+                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                  : c.promiseToPayStatus === 'BROKEN'
+                  ? 'bg-rose-50 text-rose-800 border-rose-200'
+                  : 'bg-amber-50 text-amber-800 border-amber-200'
+              }`}>
+                <Calendar className="w-3 h-3" /> PTP: {new Date(c.promiseToPayDate).toLocaleDateString()}
+                {c.promiseToPayStatus === 'FULFILLED' && ' (FULFILLED ✓)'}
               </span>
             )}
           </div>
@@ -206,7 +242,7 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
             className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-50 to-indigo-100 hover:from-indigo-100 hover:to-indigo-200 text-indigo-700 text-xs font-bold rounded-xl border border-indigo-200 transition-all disabled:opacity-50 cursor-pointer shadow-xs"
           >
             {analyzing ? <RefreshCw className="w-4 h-4 animate-spin text-indigo-600" /> : <Bot className="w-4 h-4 text-indigo-600" />}
-            <span>{analyzing ? 'Gemini AI Thinking...' : 'Re-Run AI Analysis'}</span>
+            <span>{analyzing ? 'AI Thinking...' : 'Re-Run AI Analysis'}</span>
           </button>
 
           {!isTerminal && isAllowed && (
@@ -216,7 +252,7 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
               className="inline-flex items-center gap-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md shadow-indigo-600/20 transition-all cursor-pointer"
             >
               {executing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4 fill-white" />}
-              <span>{executing ? 'Executing...' : 'Execute Recovery'}</span>
+              <span>{executing ? 'Executing...' : 'Execute Recovery Action'}</span>
             </button>
           )}
 
@@ -255,12 +291,12 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
             <div>
               <h4 className="text-sm font-extrabold text-emerald-950">Revenue Successfully Recovered</h4>
               <p className="text-xs text-emerald-700 mt-0.5">
-                {formatPaiseToRupees(c.recoveredAmount || c.amountAtRisk)} verified via Razorpay HMAC SHA256 Webhook.
+                {formatPaiseToRupees(c.recoveredAmount || c.amountAtRisk)} verified via Razorpay HMAC SHA256 Webhook. Recovery workflow stopped.
               </p>
             </div>
           </div>
           <span className="text-xs font-bold px-3 py-1 bg-emerald-200/80 rounded-full text-emerald-900">
-            100% RECOVERED
+            VERIFIED &bull; WORKFLOW STOPPED
           </span>
         </div>
       )}
@@ -299,13 +335,24 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
             </div>
           </div>
 
-          {/* Promise to Pay Tracker Card */}
+          {/* Promise to Pay Tracker Card (Phase 8 & 11) */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-amber-600" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">Promise-to-Pay (PTP)</h3>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-amber-600" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">Promise-to-Pay (PTP)</h3>
+              </div>
+              {c.promiseToPayStatus && c.promiseToPayStatus !== 'NONE' && (
+                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md ${
+                  c.promiseToPayStatus === 'FULFILLED'
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : 'bg-amber-100 text-amber-800'
+                }`}>
+                  {c.promiseToPayStatus}
+                </span>
+              )}
             </div>
-            <p className="text-[11px] text-slate-500">Log customer verbal or written commitment to pay on a future date.</p>
+            <p className="text-[11px] text-slate-500">Log customer verbal or written commitment to clear due invoice.</p>
             <form onSubmit={handleSavePTP} className="space-y-2 pt-1">
               <input
                 type="date"
@@ -317,7 +364,7 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
                 type="submit"
                 className="w-full py-2 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-xl text-xs font-bold transition-colors cursor-pointer"
               >
-                Save PTP Commitment
+                Register PTP Commitment
               </button>
             </form>
             {ptpSuccess && <p className="text-[11px] text-emerald-700 font-medium">{ptpSuccess}</p>}
@@ -327,45 +374,58 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
         {/* Right Column: AI & Hinglish Generator & Policy & Mandate Cards */}
         <div className="md:col-span-2 space-y-6">
           <AIDecisionCard
-            aiDecision={ai || { decision: { action: c.recommendedAction, confidence: 0.85, reason: c.diagnosis || 'Automated Gemini analysis' } }}
+            aiDecision={ai || { decision: { action: c.recommendedAction, confidence: 0.85, reason: c.diagnosis || 'Automated analysis' } }}
             diagnosis={aiAnalysis?.diagnosis}
             risk={aiAnalysis?.risk}
             policyDecision={policy}
           />
 
-          {/* Mandate Retry Sequencer Card (Track 03 Feature) */}
+          {/* Mandate Retry Sequencer Card (Phase 9 & 12) */}
           {isMandateOrSub && (
             <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
-              <div className="flex items-center gap-2.5 border-b border-slate-100 pb-3">
-                <div className="w-8 h-8 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center">
-                  <Layers className="w-4 h-4" />
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center">
+                    <Layers className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Mandate Retry Sequencer</h4>
+                    <p className="text-[11px] text-slate-500">Autonomous retry scheduler bounded by NPCI & bank rules (Attempt {c.retryCount || 0} of 3)</p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Mandate Retry Sequencer</h4>
-                  <p className="text-[11px] text-slate-500">Autonomous retry scheduler optimized for Indian bank salary cycles</p>
-                </div>
+
+                {!isRecovered && c.status !== 'ESCALATED' && (
+                  <button
+                    onClick={handleSequenceMandate}
+                    disabled={sequencingMandate}
+                    className="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    {sequencingMandate ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
+                    <span>Sequence Step &rarr;</span>
+                  </button>
+                )}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <div className={`p-3 rounded-xl border ${c.retryCount >= 1 ? 'bg-cyan-50 border-cyan-300' : 'bg-slate-50 border-slate-200'}`}>
                   <span className="text-[10px] font-bold text-slate-400 uppercase block">Step 1 (0h)</span>
                   <p className="font-bold text-slate-800 mt-0.5">Soft Decline Retry</p>
-                  <span className="text-[10px] text-emerald-600 font-medium">Auto-executed</span>
+                  <span className="text-[10px] text-emerald-600 font-medium">{c.retryCount >= 1 ? '✓ Executed' : 'Scheduled'}</span>
                 </div>
-                <div className="p-3 bg-indigo-50/60 rounded-xl border border-indigo-200">
+                <div className={`p-3 rounded-xl border ${c.retryCount >= 2 ? 'bg-indigo-50 border-indigo-300' : 'bg-slate-50 border-slate-200'}`}>
                   <span className="text-[10px] font-bold text-indigo-400 uppercase block">Step 2 (Salary Cycle)</span>
                   <p className="font-bold text-indigo-900 mt-0.5">1st-5th Month Sync</p>
-                  <span className="text-[10px] text-indigo-700 font-medium">Highest success rate</span>
+                  <span className="text-[10px] text-indigo-700 font-medium">{c.retryCount >= 2 ? '✓ Executed' : 'Scheduled'}</span>
                 </div>
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <div className={`p-3 rounded-xl border ${c.retryCount >= 3 ? 'bg-cyan-50 border-cyan-300' : 'bg-slate-50 border-slate-200'}`}>
                   <span className="text-[10px] font-bold text-slate-400 uppercase block">Step 3 (+48h)</span>
                   <p className="font-bold text-slate-800 mt-0.5">UPI Autopay Switch</p>
-                  <span className="text-[10px] text-slate-500 font-medium">WhatsApp 1-click</span>
+                  <span className="text-[10px] text-slate-500 font-medium">{c.retryCount >= 3 ? '✓ Dispatched' : 'Scheduled'}</span>
                 </div>
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <div className={`p-3 rounded-xl border ${c.status === 'ESCALATED' ? 'bg-amber-50 border-amber-300' : 'bg-slate-50 border-slate-200'}`}>
                   <span className="text-[10px] font-bold text-slate-400 uppercase block">Step 4 (Grace End)</span>
                   <p className="font-bold text-slate-800 mt-0.5">Escalate / Pause</p>
-                  <span className="text-[10px] text-slate-500 font-medium">Policy guardrail</span>
+                  <span className="text-[10px] text-slate-500 font-medium">{c.status === 'ESCALATED' ? 'Escalated' : 'Policy Bound'}</span>
                 </div>
               </div>
             </div>
@@ -380,7 +440,7 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
                 </div>
                 <div>
                   <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Hinglish Voice & WhatsApp Recovery Copy</h4>
-                  <p className="text-[11px] text-slate-500">Gemini-generated culturally tailored communication for Indian customers</p>
+                  <p className="text-[11px] text-slate-500">Culturally tailored communication for Indian customers</p>
                 </div>
               </div>
               <button

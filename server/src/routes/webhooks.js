@@ -107,6 +107,9 @@ router.post('/razorpay', async (req, res) => {
         recoveryCase.status = 'RECOVERED';
         recoveryCase.resolvedAt = new Date();
         recoveryCase.resolutionReason = `Payment verified via Razorpay webhook (${eventType})`;
+        if (recoveryCase.promiseToPayStatus === 'PENDING') {
+          recoveryCase.promiseToPayStatus = 'FULFILLED';
+        }
         await recoveryCase.save();
 
         await logAuditEvent({

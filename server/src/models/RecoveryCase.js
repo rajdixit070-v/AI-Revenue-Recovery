@@ -101,6 +101,18 @@ const recoveryCaseSchema = new mongoose.Schema(
     resolvedAt: { type: Date, default: null },
     resolutionReason: { type: String, default: null },
     promiseToPayDate: { type: Date, default: null },
+    promiseToPayAmount: { type: Number, default: null },
+    promiseToPayStatus: {
+      type: String,
+      enum: ['NONE', 'PENDING', 'FULFILLED', 'BROKEN'],
+      default: 'NONE',
+    },
+    executionMode: {
+      type: String,
+      enum: ['RAZORPAY_TEST_MODE', 'SIMULATION'],
+      default: 'SIMULATION',
+      index: true,
+    },
     _isDemoData: { type: Boolean, default: false, select: false },
   },
   { timestamps: true }
