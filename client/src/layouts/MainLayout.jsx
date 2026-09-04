@@ -31,8 +31,8 @@ export default function MainLayout({ children, currentPath, onNavigate, title, e
         />
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 z-1 relative">
+      {/* Main Content Area with Fixed Topbar & Smooth Scroll Container */}
+      <div className="flex-1 flex flex-col min-w-0 z-1 relative h-screen overflow-y-auto">
         <Topbar 
           title={title} 
           environment={environment} 

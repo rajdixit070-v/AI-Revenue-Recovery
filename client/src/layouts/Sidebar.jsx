@@ -45,7 +45,7 @@ const NAV_GROUPS = [
     items: [
       { path: '/policies', label: 'Recovery Policies', icon: Sliders },
       { path: '/audit', label: 'Audit Trail', icon: FileText },
-      { path: '/settings', label: 'Configuration', icon: Settings },
+      { path: '/settings', label: 'Settings', icon: Settings },
     ],
   },
 ];

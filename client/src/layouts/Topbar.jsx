@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import EnvironmentIndicator from '../components/EnvironmentIndicator';
-import { User, LogIn, LogOut, ShieldCheck, CheckCircle2, ChevronRight, Sparkles, Layers, Menu } from 'lucide-react';
+import { User, LogIn, LogOut, ShieldCheck, CheckCircle2, ChevronRight, Sparkles, Layers, Menu, Settings } from 'lucide-react';
 import { ensureAuthToken } from '../services/api';
 
 export default function Topbar({ title, environment = 'SIMULATION MODE', currentPath = '/', onNavigate, onToggleMobile }) {
@@ -38,7 +38,7 @@ export default function Topbar({ title, environment = 'SIMULATION MODE', current
   };
 
   return (
-    <header className="h-16 bg-[#0B101E]/80 backdrop-blur-xl border-b border-white/[0.06] px-4 md:px-6 flex items-center justify-between sticky top-0 z-30">
+    <header className="h-16 bg-[#0B101E]/95 backdrop-blur-2xl border-b border-white/[0.06] px-4 md:px-6 flex items-center justify-between sticky top-0 z-40 shadow-lg shadow-black/20 shrink-0">
       {/* Mobile Hamburger & Breadcrumb & Title */}
       <div className="flex items-center gap-3">
         {onToggleMobile && (
@@ -60,7 +60,22 @@ export default function Topbar({ title, environment = 'SIMULATION MODE', current
       </div>
 
       {/* Right Controls */}
-      <div className="flex items-center gap-3 md:gap-4">
+      <div className="flex items-center gap-2.5 md:gap-4">
+        {/* Quick Settings Icon */}
+        {onNavigate && (
+          <button
+            onClick={() => onNavigate('/settings')}
+            className={`p-2 rounded-xl transition-all cursor-pointer border ${
+              currentPath === '/settings'
+                ? 'bg-indigo-600/20 text-indigo-400 border-indigo-500/40'
+                : 'text-slate-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border-white/[0.08]'
+            }`}
+            title="System Settings"
+          >
+            <Settings className="w-4 h-4" />
+          </button>
+        )}
+
         {/* Quick Nav Trigger */}
         {onNavigate && currentPath !== '/evaluations' && (
           <button
@@ -99,6 +114,15 @@ export default function Topbar({ title, environment = 'SIMULATION MODE', current
                 </div>
               </div>
               <div className="p-1.5 space-y-1">
+                {onNavigate && (
+                  <button
+                    onClick={() => { setShowMenu(false); onNavigate('/settings'); }}
+                    className="w-full text-left px-3 py-2 text-slate-300 hover:bg-white/[0.06] hover:text-white rounded-xl flex items-center gap-2 transition-colors cursor-pointer"
+                  >
+                    <Settings className="w-4 h-4 text-indigo-400" />
+                    System Settings
+                  </button>
+                )}
                 <button
                   onClick={handleLoginDemo}
                   className="w-full text-left px-3 py-2 text-slate-300 hover:bg-white/[0.06] hover:text-white rounded-xl flex items-center gap-2 transition-colors cursor-pointer"
@@ -110,7 +134,7 @@ export default function Topbar({ title, environment = 'SIMULATION MODE', current
                   onClick={handleLogout}
                   className="w-full text-left px-3 py-2 text-rose-400 hover:bg-rose-500/10 rounded-xl flex items-center gap-2 transition-colors cursor-pointer"
                 >
-                  <LogOut className="w-4 h-4 text-rose-400" />
+                  <LogOut className="w-4 h-4" />
                   Sign Out
                 </button>
               </div>
