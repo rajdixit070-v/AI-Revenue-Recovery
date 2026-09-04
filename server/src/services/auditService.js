@@ -39,7 +39,9 @@ async function logAuditEvent(params = {}) {
     newState,
     metadata: safeMetadata,
     timestamp: new Date(),
-    _isDemoData: params.isDemoData !== undefined ? params.isDemoData : (!process.env.RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID.includes('your_')),
+    _isDemoData: params.isDemoData !== undefined
+      ? params.isDemoData
+      : (params.executionMode ? params.executionMode === 'SIMULATION' : (!process.env.RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID.includes('your_') || process.env.RAZORPAY_KEY_ID.includes('sample_'))),
   });
 
   if (mongoose.connection.readyState !== 1) {

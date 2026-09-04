@@ -9,6 +9,7 @@ const { Payment } = require('../models/Payment');
 const { logAuditEvent } = require('./auditService');
 const razorpayService = require('./razorpayService');
 const notificationService = require('./notificationService');
+const { isRazorpayConfigured, getSystemExecutionMode } = require('./executionMode');
 
 async function executeAction(action, context = {}) {
   const { caseId, recoveryCase, customer, payment } = context;
@@ -28,8 +29,9 @@ async function executeAction(action, context = {}) {
     };
   }
 
-  const isRazorpayConfigured = !!process.env.RAZORPAY_KEY_ID && !process.env.RAZORPAY_KEY_ID.includes('your_');
-  const executionMode = isRazorpayConfigured ? 'RAZORPAY_TEST_MODE' : 'SIMULATION';
+  const isConfigured = isRazorpayConfigured();
+  // Preserve case's executionMode if already set, else calculate cleanly
+  const executionMode = recoveryCase.executionMode || (isConfigured ? 'RAZORPAY_TEST_MODE' : 'SIMULATION');
 
   let razorpayResult = null;
   let notificationResult = null;
@@ -107,7 +109,7 @@ async function executeAction(action, context = {}) {
       notificationOutput: notificationResult,
     },
     startedAt: new Date(),
-    _isDemoData: !isRazorpayConfigured,
+    _isDemoData: executionMode === 'SIMULATION',
   });
 
   const mongoose = require('mongoose');

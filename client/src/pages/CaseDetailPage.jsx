@@ -95,14 +95,24 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
     setPaying(true);
     setExecutionMessage(null);
     try {
-      const res = await api.simulatePaymentSuccess(caseId);
-      setExecutionMessage({
-        type: 'celebration',
-        text: `🎉 Verified Recovery! Customer completed payment. Recovered ${formatPaiseToRupees(c.amountAtRisk)} via verified Razorpay Webhook!`,
-      });
+      if (c.executionMode === 'RAZORPAY_TEST_MODE') {
+        // Real Test Mode: Dispatch cryptographic HMAC-SHA256 Razorpay webhook
+        const res = await api.dispatchTestWebhook(caseId);
+        setExecutionMessage({
+          type: 'celebration',
+          text: `🎉 Verified Recovery! Razorpay Test Mode Webhook signature verified. Recovered ${formatPaiseToRupees(c.amountAtRisk)}!`,
+        });
+      } else {
+        // Explicit Simulation Mode
+        const res = await api.simulatePaymentSuccess(caseId);
+        setExecutionMessage({
+          type: 'celebration',
+          text: `⚡ Simulation payment success recorded! ${formatPaiseToRupees(c.amountAtRisk)} recovered in Simulation Mode.`,
+        });
+      }
       loadCase(true);
     } catch (err) {
-      setExecutionMessage({ type: 'error', text: err.message || 'Failed to simulate payment webhook' });
+      setExecutionMessage({ type: 'error', text: err.message || 'Payment handling failed' });
     } finally {
       setPaying(false);
     }
@@ -271,10 +281,16 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
                 onClick={handleSimulatePayment}
                 disabled={paying}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
-                title="Simulates instant Razorpay Webhook payment capture"
+                title={c.executionMode === 'RAZORPAY_TEST_MODE' ? 'Dispatches cryptographic HMAC-SHA256 Razorpay Webhook' : 'Simulates payment outcome in Simulation Mode'}
               >
                 {paying ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4 fill-white" />}
-                <span>{paying ? 'Verifying...' : '⚡ Simulate Webhook'}</span>
+                <span>
+                  {paying
+                    ? 'Processing...'
+                    : c.executionMode === 'RAZORPAY_TEST_MODE'
+                    ? '⚡ Dispatch Test Webhook'
+                    : '⚡ Simulate Success'}
+                </span>
               </button>
             </>
           )}

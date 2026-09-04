@@ -17,11 +17,15 @@ export default function RazorpayCheckoutModal({ isOpen, onClose, caseData, onPay
     setProcessing(true);
     setError(null);
     try {
-      await api.simulatePaymentSuccess(caseData.caseId);
+      if (caseData.executionMode === 'RAZORPAY_TEST_MODE') {
+        await api.dispatchTestWebhook(caseData.caseId);
+      } else {
+        await api.simulatePaymentSuccess(caseData.caseId);
+      }
       if (onPaymentSuccess) onPaymentSuccess();
       onClose();
     } catch (err) {
-      setError(err.message || 'Payment simulation failed');
+      setError(err.message || 'Payment completion failed');
     } finally {
       setProcessing(false);
     }

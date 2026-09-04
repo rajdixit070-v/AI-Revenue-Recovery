@@ -86,6 +86,7 @@ export const api = {
   simulateAction: (id, action) => request(`/recovery/cases/${id}/simulate-action`, { method: 'POST', body: JSON.stringify({ action }) }),
   simulateFailure: (data) => request('/recovery/simulate-failure', { method: 'POST', body: JSON.stringify(data) }),
   simulatePaymentSuccess: (caseId) => request(`/recovery/cases/${caseId}/simulate-payment-success`, { method: 'POST' }),
+  dispatchTestWebhook: (caseId) => request(`/recovery/cases/${caseId}/dispatch-test-webhook`, { method: 'POST' }),
   getHinglishScript: (caseId) => request(`/recovery/cases/${caseId}/hinglish-script`, { method: 'POST' }),
   setPromiseToPay: (caseId, promiseDate, amount) => request(`/recovery/cases/${caseId}/promise-to-pay`, { method: 'POST', body: JSON.stringify({ promiseDate, amount }) }),
   sequenceMandate: (caseId) => request(`/recovery/cases/${caseId}/mandate-sequence`, { method: 'POST' }),
