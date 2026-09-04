@@ -448,10 +448,12 @@ router.post('/simulate-failure', async (req, res, next) => {
 
     const amountInPaise = Math.round(Number(amountInRupees) * 100);
 
+    const isRazorpayConfigured = !!process.env.RAZORPAY_KEY_ID && !process.env.RAZORPAY_KEY_ID.includes('your_');
+    const executionMode = isRazorpayConfigured ? 'RAZORPAY_TEST_MODE' : 'SIMULATION';
+
     let customer = await Customer.findOne({ email: customerEmail.toLowerCase() });
     if (!customer) {
       customer = new Customer({
-        externalCustomerId: `cust_live_${Date.now()}`,
         name: customerName,
         email: customerEmail.toLowerCase(),
         phone: '+919876543210',
@@ -459,7 +461,7 @@ router.post('/simulate-failure', async (req, res, next) => {
         lifetimeValue: 2500000,
         successfulPayments: 3,
         failedPayments: 1,
-        _isDemoData: true,
+        _isDemoData: !isRazorpayConfigured,
       });
       await customer.save();
     } else {
@@ -478,7 +480,7 @@ router.post('/simulate-failure', async (req, res, next) => {
       failureCode,
       failureReason: failureCode === 'INSUFFICIENT_FUNDS' ? 'Insufficient balance in bank account' : 'Payment dropped by customer during OTP verification',
       attemptCount: 1,
-      _isDemoData: true,
+      _isDemoData: !isRazorpayConfigured,
     });
     await payment.save();
 
@@ -498,7 +500,8 @@ router.post('/simulate-failure', async (req, res, next) => {
       recommendedAction: 'RETRY_PAYMENT',
       diagnosis: null,
       recoveryWindowExpiresAt: new Date(Date.now() + 7 * 24 * 3600 * 1000),
-      _isDemoData: true,
+      executionMode,
+      _isDemoData: !isRazorpayConfigured,
     });
     await recoveryCase.save();
 

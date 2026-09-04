@@ -153,6 +153,8 @@ router.post('/razorpay', async (req, res) => {
       }
     }
 
+    const isRazorpayConfigured = !!process.env.RAZORPAY_KEY_ID && !process.env.RAZORPAY_KEY_ID.includes('your_');
+
     // Save WebhookEvent document for idempotency
     await WebhookEvent.create({
       eventId,
@@ -162,7 +164,7 @@ router.post('/razorpay', async (req, res) => {
       processedAt: new Date(),
       caseId: recoveryCase ? recoveryCase._id : null,
       paymentId: payment ? payment._id : null,
-      _isDemoData: true,
+      _isDemoData: !isRazorpayConfigured,
     });
 
     res.status(200).json({ status: 'success', eventId, processed: true });
