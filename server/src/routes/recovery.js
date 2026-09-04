@@ -33,7 +33,7 @@ router.get('/metrics', async (req, res, next) => {
     const [allCases, payments, blockedAuditLogs] = await Promise.all([
       RecoveryCase.find(mainCaseFilter).populate('customerId', 'name email').populate('paymentId').lean(),
       Payment.find(mainPaymentFilter).lean(),
-      AuditLog.find({ eventType: 'RECOVERY_ACTION_BLOCKED', ...mainCaseFilter }).lean(),
+      AuditLog.find({ eventType: 'RECOVERY_ACTION_BLOCKED' }).lean(),
     ]);
 
     let revenueAtRisk = 0;
