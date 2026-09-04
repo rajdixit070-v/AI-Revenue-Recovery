@@ -1,6 +1,49 @@
 import React, { useState } from 'react';
 import { api } from '../services/api';
-import { Zap, X, AlertTriangle, ArrowRight, User, DollarSign, RefreshCw } from 'lucide-react';
+import { Zap, X, AlertTriangle, ArrowRight, User, DollarSign, RefreshCw, Star, Sparkles } from 'lucide-react';
+
+const HERO_SCENARIOS = [
+  {
+    id: 'hero_payment',
+    label: 'Scenario 1: Payment Failure',
+    amount: 4999,
+    customerName: 'Rahul Sharma',
+    customerEmail: 'rahul.sharma@example.com',
+    issueType: 'PAYMENT_FAILURE',
+    failureCode: 'INSUFFICIENT_FUNDS',
+    tag: '₹4,999 • Temporary Decline',
+  },
+  {
+    id: 'hero_checkout',
+    label: 'Scenario 2: Checkout Abandonment',
+    amount: 18500,
+    customerName: 'Pooja Verma',
+    customerEmail: 'pooja.verma@example.com',
+    issueType: 'CHECKOUT_ABANDONMENT',
+    failureCode: 'AUTH_FAILURE',
+    tag: '₹18,500 • Drop during OTP',
+  },
+  {
+    id: 'hero_b2b',
+    label: 'Scenario 3: B2B Overdue Receivable',
+    amount: 75000,
+    customerName: 'Apex Tech Solutions',
+    customerEmail: 'finance@apextech.in',
+    issueType: 'OVERDUE_RECEIVABLE',
+    failureCode: 'LIMIT_EXCEEDED',
+    tag: '₹75,000 • 14 Days Overdue',
+  },
+  {
+    id: 'hero_mandate',
+    label: 'Scenario 4: Mandate / Subscription',
+    amount: 1499,
+    customerName: 'Ananya Iyer',
+    customerEmail: 'ananya.iyer@example.com',
+    issueType: 'MANDATE_FAILURE',
+    failureCode: 'MANDATE_INVALID',
+    tag: '₹1,499 • Autopay Expired',
+  },
+];
 
 export default function SimulateFailureModal({ isOpen, onClose, onSuccess }) {
   const [customerName, setCustomerName] = useState('Rahul Sharma');
@@ -12,6 +55,14 @@ export default function SimulateFailureModal({ isOpen, onClose, onSuccess }) {
   const [error, setError] = useState(null);
 
   if (!isOpen) return null;
+
+  const selectHeroScenario = (sc) => {
+    setCustomerName(sc.customerName);
+    setCustomerEmail(sc.customerEmail);
+    setAmountInRupees(sc.amount);
+    setIssueType(sc.issueType);
+    setFailureCode(sc.failureCode);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,7 +89,7 @@ export default function SimulateFailureModal({ isOpen, onClose, onSuccess }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-6 text-slate-100">
+      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-5 text-slate-100 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-slate-800 pb-4">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
@@ -60,9 +111,30 @@ export default function SimulateFailureModal({ isOpen, onClose, onSuccess }) {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-          <div className="space-y-1.5">
-            <label className="text-slate-300 font-semibold block">Customer Name</label>
+        {/* 4 Hero Scenarios (Phase 37) */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-amber-400">
+            <Star className="w-3.5 h-3.5 fill-amber-400" />
+            <span>Four Hero Demo Scenarios (1-Click Presets)</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {HERO_SCENARIOS.map((sc) => (
+              <button
+                key={sc.id}
+                type="button"
+                onClick={() => selectHeroScenario(sc)}
+                className="p-2.5 bg-slate-950/80 hover:bg-slate-800 border border-slate-800 rounded-xl text-left transition-all cursor-pointer group"
+              >
+                <span className="font-bold text-[11px] text-white block group-hover:text-amber-300">{sc.label}</span>
+                <span className="text-[10px] text-slate-400 block mt-0.5">{sc.tag}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-3.5 text-xs pt-1 border-t border-slate-800">
+          <div className="space-y-1">
+            <label className="text-slate-300 font-semibold block">Customer / Company Name</label>
             <div className="relative">
               <User className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
               <input
@@ -75,7 +147,7 @@ export default function SimulateFailureModal({ isOpen, onClose, onSuccess }) {
             </div>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label className="text-slate-300 font-semibold block">Amount (INR ₹)</label>
             <div className="relative">
               <span className="text-slate-500 absolute left-3.5 top-2 font-bold text-sm">₹</span>
@@ -92,7 +164,7 @@ export default function SimulateFailureModal({ isOpen, onClose, onSuccess }) {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <label className="text-slate-300 font-semibold block">Issue Category</label>
               <select
                 value={issueType}
@@ -103,10 +175,11 @@ export default function SimulateFailureModal({ isOpen, onClose, onSuccess }) {
                 <option value="CHECKOUT_ABANDONMENT">Checkout Dropoff</option>
                 <option value="SUBSCRIPTION_FAILURE">Subscription</option>
                 <option value="MANDATE_FAILURE">Mandate Failure</option>
+                <option value="OVERDUE_RECEIVABLE">Overdue Receivable</option>
               </select>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <label className="text-slate-300 font-semibold block">Failure Reason</label>
               <select
                 value={failureCode}
@@ -117,6 +190,8 @@ export default function SimulateFailureModal({ isOpen, onClose, onSuccess }) {
                 <option value="CARD_DECLINED">Card Declined</option>
                 <option value="AUTH_FAILURE">OTP Timeout / Drop</option>
                 <option value="GATEWAY_ERROR">Bank Server Busy</option>
+                <option value="LIMIT_EXCEEDED">Limit Exceeded</option>
+                <option value="MANDATE_INVALID">Mandate Invalid</option>
               </select>
             </div>
           </div>

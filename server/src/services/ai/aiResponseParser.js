@@ -59,6 +59,51 @@ function parseAndValidateResponse(rawOutput) {
   // Sanitize alternative actions to allowed list
   parsed.alternativeActions = parsed.alternativeActions.filter(act => ALLOWED_ACTIONS.includes(act));
 
+  // Sanitize and validate strategy comparison options
+  let strategyComparison = [];
+  if (Array.isArray(parsed.strategyComparison) && parsed.strategyComparison.length > 0) {
+    strategyComparison = parsed.strategyComparison
+      .filter(s => s && typeof s === 'object' && ALLOWED_ACTIONS.includes(s.action))
+      .map(s => ({
+        action: s.action,
+        probability: typeof s.probability === 'number' ? Math.min(1, Math.max(0, s.probability)) : 0.5,
+        expectedRecovery: typeof s.expectedRecovery === 'number' ? s.expectedRecovery : 0,
+        customerFriction: ['LOW', 'MEDIUM', 'HIGH'].includes(s.customerFriction) ? s.customerFriction : 'LOW',
+        rationale: typeof s.rationale === 'string' ? s.rationale : `${s.action} recovery strategy`,
+      }));
+  }
+
+  // Ensure default comparison entries if missing
+  if (strategyComparison.length === 0) {
+    const mainProb = parsed.confidence || 0.85;
+    strategyComparison = [
+      {
+        action: 'RETRY_PAYMENT',
+        probability: parsed.action === 'RETRY_PAYMENT' ? mainProb : 0.46,
+        customerFriction: 'LOW',
+        rationale: 'Automated gateway retry via secondary payment route',
+      },
+      {
+        action: 'CREATE_PAYMENT_LINK',
+        probability: parsed.action === 'CREATE_PAYMENT_LINK' ? mainProb : 0.78,
+        customerFriction: 'LOW',
+        rationale: '1-click smart Razorpay payment link via WhatsApp',
+      },
+      {
+        action: 'SEND_REMINDER',
+        probability: parsed.action === 'SEND_REMINDER' ? mainProb : 0.35,
+        customerFriction: 'LOW',
+        rationale: 'Email notification sequence with checkout resume',
+      },
+      {
+        action: 'ESCALATE',
+        probability: parsed.action === 'ESCALATE' ? mainProb : 0.62,
+        customerFriction: 'HIGH',
+        rationale: 'Human account manager telephone outreach',
+      },
+    ];
+  }
+
   return {
     isValid: true,
     data: {
@@ -69,6 +114,7 @@ function parseAndValidateResponse(rawOutput) {
       diagnosis: parsed.diagnosis || { primaryCause: 'UNSPECIFIED', evidence: [], uncertainty: [] },
       expectedOutcome: parsed.expectedOutcome || '',
       alternativeActions: parsed.alternativeActions,
+      strategyComparison,
       requiresHumanApproval: parsed.requiresHumanApproval,
       stopReason: parsed.stopReason || null,
     },

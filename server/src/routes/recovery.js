@@ -72,6 +72,32 @@ router.get('/metrics', async (req, res, next) => {
     const totalCases = allCases.length;
     const caseRecoveryRate = totalCases > 0 ? Number(((casesByStatus.RECOVERED / totalCases) * 100).toFixed(1)) : 0;
 
+    // Recovery Funnel Metrics (Phase 20)
+    const funnel = {
+      atRisk: { count: totalCases, amount: totalEligible },
+      aiAnalyzed: { count: allCases.filter(c => c.status !== 'OPEN').length },
+      eligible: { count: allCases.filter(c => c.status !== 'CLOSED' && c.status !== 'EXPIRED').length },
+      executed: { count: allCases.filter(c => ['IN_RECOVERY', 'RECOVERED'].includes(c.status)).length },
+      verified: { count: casesByStatus.RECOVERED },
+      recovered: { count: casesByStatus.RECOVERED, amount: recoveredRevenue },
+    };
+
+    // Category Attribution Breakdown (Phase 15)
+    const attribution = {
+      PAYMENT_FAILURE: { recovered: 0, atRisk: 0, count: 0 },
+      CHECKOUT_ABANDONMENT: { recovered: 0, atRisk: 0, count: 0 },
+      SUBSCRIPTION_FAILURE: { recovered: 0, atRisk: 0, count: 0 },
+      OVERDUE_RECEIVABLE: { recovered: 0, atRisk: 0, count: 0 },
+      MANDATE_FAILURE: { recovered: 0, atRisk: 0, count: 0 },
+    };
+
+    allCases.forEach(rc => {
+      const cat = attribution[rc.issueType] ? rc.issueType : 'PAYMENT_FAILURE';
+      attribution[cat].count += 1;
+      attribution[cat].recovered += (rc.recoveredAmount || 0);
+      attribution[cat].atRisk += Math.max(0, (rc.amountAtRisk || 0) - (rc.recoveredAmount || 0));
+    });
+
     const needsAttention = allCases
       .filter(rc => rc.status === 'ESCALATED' || ['CRITICAL', 'HIGH'].includes(rc.riskLevel))
       .slice(0, 10);
@@ -96,6 +122,8 @@ router.get('/metrics', async (req, res, next) => {
         casesByRiskLevel,
         casesByStatus,
         casesByIssueType,
+        funnel,
+        attribution,
         environment,
       },
     });
@@ -117,6 +145,19 @@ router.get('/at-risk', async (req, res, next) => {
       status: 'success',
       data: cases,
       total: cases.length,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/degradation-monitor', async (req, res, next) => {
+  try {
+    const { detectPaymentDegradation } = require('../services/degradationService');
+    const degradation = await detectPaymentDegradation();
+    res.json({
+      status: 'success',
+      data: degradation,
     });
   } catch (err) {
     next(err);

@@ -39,6 +39,15 @@ REQUIRED JSON OUTPUT SCHEMA:
   },
   "expectedOutcome": "Expected result of taking this action",
   "alternativeActions": ["Array of valid secondary actions"],
+  "strategyComparison": [
+    {
+      "action": "RETRY_PAYMENT | CREATE_PAYMENT_LINK | SEND_REMINDER | ESCALATE",
+      "probability": 0.00 to 1.00,
+      "expectedRecovery": Number (in paise or rupees),
+      "customerFriction": "LOW | MEDIUM | HIGH",
+      "rationale": "Why this strategy produces this probability"
+    }
+  ],
   "requiresHumanApproval": true or false,
   "stopReason": "Null or string if stopping workflow"
 }`;

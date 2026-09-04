@@ -73,6 +73,7 @@ export const api = {
   getMe: () => request('/auth/me'),
   getHealth: () => request('/health'),
   getMetrics: () => request('/recovery/metrics'),
+  getDegradationStatus: () => request('/recovery/degradation-monitor'),
   getAtRiskCases: () => request('/recovery/at-risk'),
   getCases: (params = {}) => {
     const query = new URLSearchParams(params).toString();
