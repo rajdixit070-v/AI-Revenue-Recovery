@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 const express = require('express');
 const { Customer } = require('../models/Customer');
@@ -19,9 +19,11 @@ router.get('/', async (req, res, next) => {
     const limit = Math.min(MAX_PAGE_SIZE, Math.max(1, parseInt(req.query.limit) || DEFAULT_PAGE_SIZE));
     const skip = (page - 1) * limit;
 
+    const filter = { isBatchSynthetic: { $ne: true }, externalCustomerId: { $not: /^cust_batch_/ }, _isDemoData: { $ne: true } };
+
     const [customers, total] = await Promise.all([
-      Customer.find().sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
-      Customer.countDocuments(),
+      Customer.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Customer.countDocuments(filter),
     ]);
 
     res.json({

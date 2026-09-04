@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 const express = require('express');
 const { Payment } = require('../models/Payment');
@@ -19,7 +19,7 @@ router.get('/', async (req, res, next) => {
     const limit = Math.min(MAX_PAGE_SIZE, Math.max(1, parseInt(req.query.limit) || DEFAULT_PAGE_SIZE));
     const skip = (page - 1) * limit;
 
-    const filter = {};
+    const filter = { isBatchSynthetic: { $ne: true }, externalPaymentId: { $not: /^pay_batch_/ }, _isDemoData: { $ne: true } };
     if (req.query.status) filter.status = req.query.status;
     if (req.query.customerId) filter.customerId = req.query.customerId;
 

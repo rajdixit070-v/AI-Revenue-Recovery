@@ -27,10 +27,13 @@ router.get('/metrics', async (req, res, next) => {
   try {
     const activeStatuses = ['OPEN', 'ANALYZING', 'ACTION_PENDING', 'IN_RECOVERY'];
 
+    const mainCaseFilter = { isBatchSynthetic: { $ne: true }, caseId: { $not: /^BATCH-CASE-/ }, _isDemoData: { $ne: true } };
+    const mainPaymentFilter = { isBatchSynthetic: { $ne: true }, externalPaymentId: { $not: /^pay_batch_/ }, _isDemoData: { $ne: true } };
+
     const [allCases, payments, blockedAuditLogs] = await Promise.all([
-      RecoveryCase.find().populate('customerId', 'name email').populate('paymentId').lean(),
-      Payment.find().lean(),
-      AuditLog.find({ eventType: 'RECOVERY_ACTION_BLOCKED' }).lean(),
+      RecoveryCase.find(mainCaseFilter).populate('customerId', 'name email').populate('paymentId').lean(),
+      Payment.find(mainPaymentFilter).lean(),
+      AuditLog.find({ eventType: 'RECOVERY_ACTION_BLOCKED', ...mainCaseFilter }).lean(),
     ]);
 
     let revenueAtRisk = 0;
@@ -159,7 +162,8 @@ router.get('/metrics', async (req, res, next) => {
 router.get('/at-risk', async (req, res, next) => {
   try {
     const activeStatuses = ['OPEN', 'ANALYZING', 'ACTION_PENDING', 'IN_RECOVERY', 'ESCALATED'];
-    const cases = await RecoveryCase.find({ status: { $in: activeStatuses } })
+    const mainFilter = { isBatchSynthetic: { $ne: true }, caseId: { $not: /^BATCH-CASE-/ }, _isDemoData: { $ne: true } };
+    const cases = await RecoveryCase.find({ status: { $in: activeStatuses }, ...mainFilter })
       .populate('customerId', 'name email status lifetimeValue successfulPayments failedPayments')
       .populate('paymentId', 'amount currency status failureReason paymentMethod attemptCount')
       .sort({ riskScore: -1, amountAtRisk: -1 })
@@ -194,7 +198,7 @@ router.get('/cases', async (req, res, next) => {
     const limit = Math.min(MAX_PAGE_SIZE, Math.max(1, parseInt(req.query.limit) || DEFAULT_PAGE_SIZE));
     const skip = (page - 1) * limit;
 
-    const filter = {};
+    const filter = { isBatchSynthetic: { $ne: true }, caseId: { $not: /^BATCH-CASE-/ }, _isDemoData: { $ne: true } };
     if (req.query.status) filter.status = req.query.status;
     if (req.query.riskLevel) filter.riskLevel = req.query.riskLevel;
     if (req.query.issueType) filter.issueType = req.query.issueType;

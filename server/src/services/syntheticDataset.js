@@ -65,6 +65,8 @@ async function ensureSyntheticDataset(count = 100) {
       lifetimeValue: (5000 + (i * 2000)) * 100,
       successfulPayments: (i % 5) + 1,
       failedPayments: (i % 3),
+      _isDemoData: true,
+      isBatchSynthetic: true,
     });
 
     const payment = await Payment.create({
@@ -77,6 +79,8 @@ async function ensureSyntheticDataset(count = 100) {
       failureReason: issueType === 'CHECKOUT_ABANDONMENT' ? 'Checkout abandoned by user' : 'Insufficient funds in account',
       failureCode: issueType === 'CHECKOUT_ABANDONMENT' ? 'CHECKOUT_ABANDONED' : 'INSUFFICIENT_FUNDS',
       attemptCount: 1,
+      _isDemoData: true,
+      isBatchSynthetic: true,
     });
 
     const recommendedAction =
@@ -98,6 +102,9 @@ async function ensureSyntheticDataset(count = 100) {
       retryCount: 0,
       reminderCount: 0,
       escalationLevel: 0,
+      confidenceScore: 0.85,
+      _isDemoData: true,
+      isBatchSynthetic: true,
     });
   }
 
