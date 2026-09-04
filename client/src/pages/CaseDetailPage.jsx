@@ -185,43 +185,43 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
       {/* Top Nav Back */}
       <button
         onClick={() => onNavigate('/recovery-cases')}
-        className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
+        className="inline-flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-white transition-colors cursor-pointer"
       >
         <ArrowLeft className="w-4 h-4" /> Back to Recovery Cases
       </button>
 
       {/* Execution Alert Banner */}
       {executionMessage && (
-        <div className={`p-4 rounded-2xl text-xs font-semibold border flex items-center gap-3 transition-all ${
+        <div className={`p-4 rounded-2xl text-xs font-semibold border flex items-center gap-3 transition-all backdrop-blur-xl ${
           executionMessage.type === 'celebration'
-            ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30 text-sm font-bold shadow-lg shadow-emerald-950'
+            ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30 text-sm font-bold shadow-xl shadow-emerald-950/40'
             : executionMessage.type === 'success'
-            ? 'bg-indigo-50 text-indigo-900 border-indigo-200'
-            : 'bg-rose-50 text-rose-800 border-rose-200'
+            ? 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30'
+            : 'bg-rose-500/15 text-rose-300 border-rose-500/30'
         }`}>
           {executionMessage.type === 'celebration' ? (
             <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 animate-bounce" />
           ) : executionMessage.type === 'success' ? (
-            <Sparkles className="w-5 h-5 text-indigo-600 shrink-0" />
+            <Sparkles className="w-5 h-5 text-indigo-400 shrink-0" />
           ) : (
-            <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
+            <AlertCircle className="w-5 h-5 text-rose-400 shrink-0" />
           )}
           <span>{executionMessage.text}</span>
         </div>
       )}
 
       {/* Hero Case Header */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="bg-[#0E1526]/90 p-6 md:p-8 rounded-2xl border border-white/[0.07] backdrop-blur-xl shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <div className="flex items-center gap-2.5 flex-wrap">
-            <h2 className="text-xl font-extrabold text-slate-900 font-mono">{c.caseId}</h2>
+            <h2 className="text-xl md:text-2xl font-black text-white font-mono">{c.caseId}</h2>
             <StatusBadge status={c.status} />
             <RiskBadge level={c.riskLevel} score={c.riskScore} />
 
             <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider border ${
               c.executionMode === 'RAZORPAY_TEST_MODE'
-                ? 'bg-blue-50 text-blue-800 border-blue-200'
-                : 'bg-slate-100 text-slate-700 border-slate-200'
+                ? 'bg-blue-500/15 text-blue-300 border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.2)]'
+                : 'bg-white/[0.04] text-slate-300 border-white/[0.08]'
             }`}>
               {c.executionMode === 'RAZORPAY_TEST_MODE' ? 'Razorpay Test Mode' : 'Simulation'}
             </span>
@@ -229,18 +229,18 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
             {c.promiseToPayDate && (
               <span className={`px-2.5 py-0.5 border rounded-full text-[11px] font-bold flex items-center gap-1 ${
                 c.promiseToPayStatus === 'FULFILLED'
-                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                  ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
                   : c.promiseToPayStatus === 'BROKEN'
-                  ? 'bg-rose-50 text-rose-800 border-rose-200'
-                  : 'bg-amber-50 text-amber-800 border-amber-200'
+                  ? 'bg-rose-500/15 text-rose-300 border-rose-500/30'
+                  : 'bg-amber-500/15 text-amber-300 border-amber-500/30'
               }`}>
                 <Calendar className="w-3 h-3" /> PTP: {new Date(c.promiseToPayDate).toLocaleDateString()}
                 {c.promiseToPayStatus === 'FULFILLED' && ' (FULFILLED ✓)'}
               </span>
             )}
           </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Category: <strong className="text-slate-800">{c.issueType}</strong> &bull; Created: {formatDate(c.createdAt)}
+          <p className="text-xs text-slate-400 mt-1.5">
+            Category: <strong className="text-slate-200">{c.issueType}</strong> &bull; Created: {formatDate(c.createdAt)}
           </p>
         </div>
 
@@ -249,9 +249,9 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
           <button
             onClick={() => runAIAnalysis(caseId)}
             disabled={analyzing}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-50 to-indigo-100 hover:from-indigo-100 hover:to-indigo-200 text-indigo-700 text-xs font-bold rounded-xl border border-indigo-200 transition-all disabled:opacity-50 cursor-pointer shadow-xs"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 text-xs font-bold rounded-xl border border-indigo-500/30 transition-all disabled:opacity-50 cursor-pointer"
           >
-            {analyzing ? <RefreshCw className="w-4 h-4 animate-spin text-indigo-600" /> : <Bot className="w-4 h-4 text-indigo-600" />}
+            {analyzing ? <RefreshCw className="w-4 h-4 animate-spin text-indigo-400" /> : <Bot className="w-4 h-4 text-indigo-400" />}
             <span>{analyzing ? 'AI Thinking...' : 'Re-Run AI Analysis'}</span>
           </button>
 
@@ -259,7 +259,7 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
             <button
               onClick={() => setShowConfirm(true)}
               disabled={executing}
-              className="inline-flex items-center gap-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md shadow-indigo-600/20 transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-indigo-600/30 transition-all cursor-pointer"
             >
               {executing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4 fill-white" />}
               <span>{executing ? 'Executing...' : 'Execute Recovery Action'}</span>
@@ -270,7 +270,7 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
             <>
               <button
                 onClick={() => setShowCheckoutModal(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-600/20 transition-all cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-600/25 transition-all cursor-pointer"
                 title="Opens live interactive Razorpay Test Mode checkout popup"
               >
                 <CreditCard className="w-4 h-4" />
@@ -280,7 +280,7 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
               <button
                 onClick={handleSimulatePayment}
                 disabled={paying}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-emerald-600/25 transition-all cursor-pointer"
                 title={c.executionMode === 'RAZORPAY_TEST_MODE' ? 'Dispatches cryptographic HMAC-SHA256 Razorpay Webhook' : 'Simulates payment outcome in Simulation Mode'}
               >
                 {paying ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4 fill-white" />}
@@ -299,19 +299,19 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
 
       {/* Recovered Celebration Card */}
       {isRecovered && (
-        <div className="p-5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-center justify-between gap-4">
+        <div className="p-5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-100 flex items-center justify-between gap-4 backdrop-blur-xl shadow-xl shadow-emerald-950/20">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500 text-slate-950 flex items-center justify-center font-black shadow-md">
               <Check className="w-6 h-6 stroke-[3]" />
             </div>
             <div>
-              <h4 className="text-sm font-extrabold text-emerald-950">Revenue Successfully Recovered</h4>
-              <p className="text-xs text-emerald-700 mt-0.5">
+              <h4 className="text-sm font-extrabold text-white">Revenue Successfully Recovered</h4>
+              <p className="text-xs text-emerald-300 mt-0.5">
                 {formatPaiseToRupees(c.recoveredAmount || c.amountAtRisk)} verified via Razorpay HMAC SHA256 Webhook. Recovery workflow stopped.
               </p>
             </div>
           </div>
-          <span className="text-xs font-bold px-3 py-1 bg-emerald-200/80 rounded-full text-emerald-900">
+          <span className="text-xs font-bold px-3 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-full">
             VERIFIED &bull; WORKFLOW STOPPED
           </span>
         </div>
@@ -321,72 +321,70 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Left Column: Financials & Customer & PTP Tracker */}
         <div className="space-y-6">
-          <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+          <div className="bg-[#0E1526]/90 p-6 rounded-2xl border border-white/[0.07] backdrop-blur-xl shadow-xl space-y-4">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Financial Impact</h3>
-            <div className="pt-2 border-t border-slate-100">
-              <span className="text-xs text-slate-500">Amount at Risk</span>
-              <p className="text-xl font-extrabold text-slate-900 mt-0.5">{formatPaiseToRupees(c.amountAtRisk)}</p>
+            <div className="pt-2 border-t border-white/[0.06]">
+              <span className="text-xs text-slate-400">Amount at Risk</span>
+              <p className="text-xl font-black text-white mt-0.5">{formatPaiseToRupees(c.amountAtRisk)}</p>
             </div>
             <div>
-              <span className="text-xs text-slate-500">Recovered Amount</span>
-              <p className="text-xl font-extrabold text-emerald-600 mt-0.5">{formatPaiseToRupees(c.recoveredAmount || 0)}</p>
+              <span className="text-xs text-slate-400">Recovered Amount</span>
+              <p className="text-xl font-black text-emerald-400 mt-0.5">{formatPaiseToRupees(c.recoveredAmount || 0)}</p>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
+          <div className="bg-[#0E1526]/90 p-6 rounded-2xl border border-white/[0.07] backdrop-blur-xl shadow-xl space-y-3">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Customer Profile</h3>
             <div>
-              <span className="text-xs font-bold text-slate-900 block">{c.customerId?.name || 'Customer'}</span>
-              <span className="text-xs text-slate-500 block">{c.customerId?.email}</span>
+              <span className="text-xs font-bold text-white block">{c.customerId?.name || 'Customer'}</span>
+              <span className="text-xs text-slate-400 block">{c.customerId?.email}</span>
             </div>
-            <div className="pt-2 border-t border-slate-100 grid grid-cols-2 gap-2 text-xs">
+            <div className="pt-2 border-t border-white/[0.06] grid grid-cols-2 gap-2 text-xs">
               <div>
                 <span className="text-slate-400 block">LTV:</span>
-                <span className="font-bold text-slate-800">{formatPaiseToRupees(c.customerId?.lifetimeValue)}</span>
+                <span className="font-bold text-white">{formatPaiseToRupees(c.customerId?.lifetimeValue)}</span>
               </div>
               <div>
                 <span className="text-slate-400 block">Success/Fail:</span>
-                <span className="font-bold text-slate-800">{c.customerId?.successfulPayments || 0} / {c.customerId?.failedPayments || 0}</span>
+                <span className="font-bold text-white">{c.customerId?.successfulPayments || 0} / {c.customerId?.failedPayments || 0}</span>
               </div>
             </div>
           </div>
 
-          {/* Promise to Pay Tracker Card (Phase 8 & 11) */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
+          {/* Promise to Pay Tracker Card */}
+          <div className="bg-[#0E1526]/90 p-6 rounded-2xl border border-white/[0.07] backdrop-blur-xl shadow-xl space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-amber-600" />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">Promise-to-Pay (PTP)</h3>
+                <Calendar className="w-4 h-4 text-amber-400" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">Promise-to-Pay (PTP)</h3>
               </div>
               {c.promiseToPayStatus && c.promiseToPayStatus !== 'NONE' && (
                 <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md ${
                   c.promiseToPayStatus === 'FULFILLED'
-                    ? 'bg-emerald-100 text-emerald-800'
-                    : 'bg-amber-100 text-amber-800'
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                    : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                 }`}>
                   {c.promiseToPayStatus}
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-slate-500">Log customer verbal or written commitment to clear due invoice.</p>
+            <p className="text-[11px] text-slate-400">Log customer verbal or written commitment to clear due invoice.</p>
             <form onSubmit={handleSavePTP} className="space-y-2 pt-1">
               <input
                 type="date"
                 value={ptpDate}
                 onChange={(e) => setPtpDate(e.target.value)}
-                className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-amber-500"
+                className="w-full px-3 py-2 bg-white/[0.03] border border-white/[0.08] rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
               />
               <button
                 type="submit"
-                className="w-full py-2 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                className="w-full py-2 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 rounded-xl text-xs font-bold transition-colors cursor-pointer"
               >
                 Register PTP Commitment
               </button>
             </form>
-            {ptpSuccess && <p className="text-[11px] text-emerald-700 font-medium">{ptpSuccess}</p>}
+            {ptpSuccess && <p className="text-[11px] text-emerald-400 font-medium">{ptpSuccess}</p>}
           </div>
-        </div>
-
         {/* Right Column: AI & Hinglish Generator & Policy & Mandate Cards */}
         <div className="md:col-span-2 space-y-6">
           <AIDecisionCard
@@ -396,17 +394,17 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
             policyDecision={policy}
           />
 
-          {/* Mandate Retry Sequencer Card (Phase 9 & 12) */}
+          {/* Mandate Retry Sequencer Card */}
           {isMandateOrSub && (
-            <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="bg-[#0E1526]/90 p-6 rounded-2xl border border-white/[0.07] backdrop-blur-xl shadow-xl space-y-4">
+              <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 flex items-center justify-center shadow-[0_0_10px_rgba(6,182,212,0.2)]">
                     <Layers className="w-4 h-4" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Mandate Retry Sequencer</h4>
-                    <p className="text-[11px] text-slate-500">Autonomous retry scheduler bounded by NPCI & bank rules (Attempt {c.retryCount || 0} of 3)</p>
+                    <h4 className="text-xs font-bold text-white uppercase tracking-wider">Mandate Retry Sequencer</h4>
+                    <p className="text-[11px] text-slate-400">Autonomous retry scheduler bounded by NPCI & bank rules (Attempt {c.retryCount || 0} of 3)</p>
                   </div>
                 </div>
 
@@ -414,7 +412,7 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
                   <button
                     onClick={handleSequenceMandate}
                     disabled={sequencingMandate}
-                    className="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                    className="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
                   >
                     {sequencingMandate ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
                     <span>Sequence Step &rarr;</span>
@@ -423,46 +421,46 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
-                <div className={`p-3 rounded-xl border ${c.retryCount >= 1 ? 'bg-cyan-50 border-cyan-300' : 'bg-slate-50 border-slate-200'}`}>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase block">Step 1 (0h)</span>
-                  <p className="font-bold text-slate-800 mt-0.5">Soft Decline Retry</p>
-                  <span className="text-[10px] text-emerald-600 font-medium">{c.retryCount >= 1 ? '✓ Executed' : 'Scheduled'}</span>
+                <div className={`p-3 rounded-xl border ${c.retryCount >= 1 ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-200' : 'bg-white/[0.02] border-white/[0.06] text-slate-400'}`}>
+                  <span className="text-[10px] font-bold uppercase block opacity-70">Step 1 (0h)</span>
+                  <p className="font-bold text-white mt-0.5">Soft Decline Retry</p>
+                  <span className="text-[10px] text-emerald-400 font-medium">{c.retryCount >= 1 ? '✓ Executed' : 'Scheduled'}</span>
                 </div>
-                <div className={`p-3 rounded-xl border ${c.retryCount >= 2 ? 'bg-indigo-50 border-indigo-300' : 'bg-slate-50 border-slate-200'}`}>
-                  <span className="text-[10px] font-bold text-indigo-400 uppercase block">Step 2 (Salary Cycle)</span>
-                  <p className="font-bold text-indigo-900 mt-0.5">1st-5th Month Sync</p>
-                  <span className="text-[10px] text-indigo-700 font-medium">{c.retryCount >= 2 ? '✓ Executed' : 'Scheduled'}</span>
+                <div className={`p-3 rounded-xl border ${c.retryCount >= 2 ? 'bg-indigo-500/15 border-indigo-500/40 text-indigo-200' : 'bg-white/[0.02] border-white/[0.06] text-slate-400'}`}>
+                  <span className="text-[10px] font-bold uppercase block opacity-70">Step 2 (Salary Cycle)</span>
+                  <p className="font-bold text-white mt-0.5">1st-5th Month Sync</p>
+                  <span className="text-[10px] text-indigo-400 font-medium">{c.retryCount >= 2 ? '✓ Executed' : 'Scheduled'}</span>
                 </div>
-                <div className={`p-3 rounded-xl border ${c.retryCount >= 3 ? 'bg-cyan-50 border-cyan-300' : 'bg-slate-50 border-slate-200'}`}>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase block">Step 3 (+48h)</span>
-                  <p className="font-bold text-slate-800 mt-0.5">UPI Autopay Switch</p>
-                  <span className="text-[10px] text-slate-500 font-medium">{c.retryCount >= 3 ? '✓ Dispatched' : 'Scheduled'}</span>
+                <div className={`p-3 rounded-xl border ${c.retryCount >= 3 ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-200' : 'bg-white/[0.02] border-white/[0.06] text-slate-400'}`}>
+                  <span className="text-[10px] font-bold uppercase block opacity-70">Step 3 (+48h)</span>
+                  <p className="font-bold text-white mt-0.5">UPI Autopay Switch</p>
+                  <span className="text-[10px] text-slate-400 font-medium">{c.retryCount >= 3 ? '✓ Dispatched' : 'Scheduled'}</span>
                 </div>
-                <div className={`p-3 rounded-xl border ${c.status === 'ESCALATED' ? 'bg-amber-50 border-amber-300' : 'bg-slate-50 border-slate-200'}`}>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase block">Step 4 (Grace End)</span>
-                  <p className="font-bold text-slate-800 mt-0.5">Escalate / Pause</p>
-                  <span className="text-[10px] text-slate-500 font-medium">{c.status === 'ESCALATED' ? 'Escalated' : 'Policy Bound'}</span>
+                <div className={`p-3 rounded-xl border ${c.status === 'ESCALATED' ? 'bg-amber-500/15 border-amber-500/40 text-amber-200' : 'bg-white/[0.02] border-white/[0.06] text-slate-400'}`}>
+                  <span className="text-[10px] font-bold uppercase block opacity-70">Step 4 (Grace End)</span>
+                  <p className="font-bold text-white mt-0.5">Escalate / Pause</p>
+                  <span className="text-[10px] text-slate-400 font-medium">{c.status === 'ESCALATED' ? 'Escalated' : 'Policy Bound'}</span>
                 </div>
               </div>
             </div>
           )}
 
           {/* Hinglish Voice & Message Generator Card */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="bg-[#0E1526]/90 p-6 rounded-2xl border border-white/[0.07] backdrop-blur-xl shadow-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-400 flex items-center justify-center shadow-[0_0_10px_rgba(168,85,247,0.2)]">
                   <MessageSquare className="w-4 h-4" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Hinglish Voice & WhatsApp Recovery Copy</h4>
-                  <p className="text-[11px] text-slate-500">Culturally tailored communication for Indian customers</p>
+                  <h4 className="text-xs font-bold text-white uppercase tracking-wider">Hinglish Voice & WhatsApp Recovery Copy</h4>
+                  <p className="text-[11px] text-slate-400">Culturally tailored communication for Indian customers</p>
                 </div>
               </div>
               <button
                 onClick={handleGenerateHinglish}
                 disabled={generatingHinglish}
-                className="px-3.5 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="px-3.5 py-1.5 bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 border border-purple-500/30 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 {generatingHinglish ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
                 <span>{generatingHinglish ? 'Generating...' : 'Generate Hinglish Script'}</span>
@@ -471,28 +469,28 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
 
             {hinglishData ? (
               <div className="space-y-3 text-xs">
-                <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                <div className="p-4 bg-white/[0.02] rounded-xl border border-white/[0.06] space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-slate-700 flex items-center gap-1.5">
-                      <MessageSquare className="w-3.5 h-3.5 text-emerald-600" /> WhatsApp / SMS Message:
+                    <span className="font-bold text-slate-300 flex items-center gap-1.5">
+                      <MessageSquare className="w-3.5 h-3.5 text-emerald-400" /> WhatsApp / SMS Message:
                     </span>
                     <button
                       onClick={() => handleCopy(hinglishData.hinglishMessage)}
-                      className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer"
+                      className="text-[11px] font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 cursor-pointer"
                     >
                       <Copy className="w-3 h-3" /> {copied ? 'Copied!' : 'Copy'}
                     </button>
                   </div>
-                  <p className="text-slate-800 whitespace-pre-line font-medium leading-relaxed bg-white p-3 rounded-lg border border-slate-100">
+                  <p className="text-white whitespace-pre-line font-medium leading-relaxed bg-white/[0.03] p-3 rounded-lg border border-white/[0.06]">
                     {hinglishData.hinglishMessage}
                   </p>
                 </div>
 
-                <div className="p-3.5 bg-purple-50/50 rounded-xl border border-purple-100 space-y-2">
-                  <span className="font-bold text-purple-900 flex items-center gap-1.5">
-                    <PhoneCall className="w-3.5 h-3.5 text-purple-600" /> 20-Second Voice Call Script:
+                <div className="p-4 bg-purple-500/10 rounded-xl border border-purple-500/20 space-y-2">
+                  <span className="font-bold text-purple-300 flex items-center gap-1.5">
+                    <PhoneCall className="w-3.5 h-3.5 text-purple-400" /> 20-Second Voice Call Script:
                   </span>
-                  <p className="text-purple-950 font-medium leading-relaxed bg-white p-3 rounded-lg border border-purple-100">
+                  <p className="text-purple-100 font-medium leading-relaxed bg-white/[0.03] p-3 rounded-lg border border-purple-500/20">
                     "{hinglishData.voiceScript}"
                   </p>
                 </div>
@@ -509,8 +507,10 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
       </div>
 
       {/* Audit Timeline */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
-        <h3 className="text-sm font-bold text-slate-900">Audit Trail History</h3>
+      <div className="bg-[#0E1526]/90 p-6 md:p-8 rounded-2xl border border-white/[0.07] backdrop-blur-xl shadow-xl space-y-4">
+        <h3 className="text-sm font-bold text-white">Audit Trail History</h3>
+        <Timeline logs={c.auditLogs} />
+      </div>
         <Timeline logs={c.auditLogs} />
       </div>
 

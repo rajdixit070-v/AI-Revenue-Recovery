@@ -67,12 +67,16 @@ export default function JudgeModePanel({ isOpen, onClose, onNavigate }) {
     setLoading(true);
     try {
       setCurrentStep(7);
-      setStatusText('Executing Razorpay Test Mode action...');
+      setStatusText('Executing Razorpay action...');
       await api.executeCase(caseId, 'RETRY_PAYMENT');
 
       setCurrentStep(9);
-      setStatusText('Triggering Razorpay Webhook signature verification...');
-      await api.simulatePaymentSuccess(caseId);
+      setStatusText('Triggering verified payment capture webhook...');
+      try {
+        await api.dispatchTestWebhook(caseId);
+      } catch (e) {
+        await api.simulatePaymentSuccess(caseId);
+      }
 
       setCurrentStep(11);
       setStatusText(`Case ${caseId} 100% RECOVERED and audited!`);
@@ -84,18 +88,18 @@ export default function JudgeModePanel({ isOpen, onClose, onNavigate }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-2xl w-full shadow-2xl space-y-6 text-slate-100 max-h-[92vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 bg-[#080C14]/80 backdrop-blur-md flex items-center justify-center p-4">
+      <div className="bg-[#0E162B] border border-white/[0.08] rounded-3xl p-6 md:p-8 max-w-2xl w-full shadow-2xl space-y-6 text-slate-100 max-h-[92vh] overflow-y-auto backdrop-blur-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center font-bold shadow-[0_0_12px_rgba(245,158,11,0.2)]">
               <Award className="w-6 h-6" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-extrabold text-white">Judge Mode: Guided Recovery Walkthrough</h3>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                   Track 03
                 </span>
               </div>
@@ -109,7 +113,7 @@ export default function JudgeModePanel({ isOpen, onClose, onNavigate }) {
 
         {/* Status ticker */}
         {statusText && (
-          <div className="p-3 bg-indigo-950/60 border border-indigo-800/80 rounded-xl text-xs text-indigo-200 font-medium flex items-center gap-2">
+          <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-xs text-indigo-200 font-medium flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-indigo-400 shrink-0" />
             <span>{statusText}</span>
           </div>

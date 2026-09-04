@@ -53,25 +53,25 @@ export default function AtRiskPage({ onNavigate }) {
     <div className="space-y-6">
       {/* Summary KPI Header */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
+        <div className="bg-[#0E1526]/90 p-5 rounded-2xl border border-white/[0.08] shadow-xl">
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Revenue at Risk</span>
-          <p className="text-2xl font-extrabold text-slate-900 mt-1">{formatPaiseToRupees(totalAmountAtRisk)}</p>
+          <p className="text-2xl font-extrabold text-white mt-1">{formatPaiseToRupees(totalAmountAtRisk)}</p>
           <span className="text-[11px] text-slate-500">{cases.length} active recoverable cases</span>
         </div>
-        <div className="bg-amber-50 p-5 rounded-2xl border border-amber-200/80 shadow-2xs">
-          <span className="text-xs font-bold text-amber-700 uppercase tracking-wider">Critical & High Priority</span>
-          <p className="text-2xl font-extrabold text-amber-900 mt-1">{criticalCount + highCount}</p>
-          <span className="text-[11px] text-amber-700 font-medium">{criticalCount} Critical &bull; {highCount} High Risk</span>
+        <div className="bg-[#0E1526]/90 p-5 rounded-2xl border border-amber-500/20 shadow-xl">
+          <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">Critical & High Priority</span>
+          <p className="text-2xl font-extrabold text-amber-300 mt-1">{criticalCount + highCount}</p>
+          <span className="text-[11px] text-amber-400/80 font-medium">{criticalCount} Critical &bull; {highCount} High Risk</span>
         </div>
-        <div className="bg-indigo-50 p-5 rounded-2xl border border-indigo-200/80 shadow-2xs">
-          <span className="text-xs font-bold text-indigo-700 uppercase tracking-wider">AI Recovery Strategy</span>
-          <p className="text-sm font-extrabold text-indigo-950 mt-1">Autonomous Retry & Links</p>
-          <span className="text-[11px] text-indigo-700 font-medium">Governed by 3-Retry Policy Limit</span>
+        <div className="bg-[#0E1526]/90 p-5 rounded-2xl border border-indigo-500/20 shadow-xl">
+          <span className="text-xs font-bold text-indigo-400 uppercase tracking-wider">AI Recovery Strategy</span>
+          <p className="text-sm font-extrabold text-indigo-200 mt-1">Autonomous Retry & Links</p>
+          <span className="text-[11px] text-indigo-400/80 font-medium">Governed by 3-Retry Policy Limit</span>
         </div>
       </div>
 
       {/* Search and Risk Level Filter Chips */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-[#0E1526]/90 p-4 rounded-2xl border border-white/[0.08] shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="relative flex-1 max-w-md">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
           <input
@@ -79,7 +79,7 @@ export default function AtRiskPage({ onNavigate }) {
             placeholder="Search at-risk cases by ID, customer, or category..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600"
+            className="w-full pl-10 pr-4 py-2 bg-white/[0.04] border border-white/[0.08] rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
           />
         </div>
 
@@ -89,10 +89,10 @@ export default function AtRiskPage({ onNavigate }) {
             <button
               key={risk}
               onClick={() => setSelectedRiskFilter(risk)}
-              className={`px-3 py-1.5 rounded-xl transition-colors ${
+              className={`px-3 py-1.5 rounded-xl transition-colors cursor-pointer ${
                 selectedRiskFilter === risk
-                  ? 'bg-indigo-600 text-white shadow-xs'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
+                  : 'bg-white/[0.04] border border-white/[0.06] text-slate-400 hover:text-white hover:bg-white/[0.08]'
               }`}
             >
               {risk === 'ALL' ? 'All Risks' : `${risk} Risk`}
@@ -109,31 +109,31 @@ export default function AtRiskPage({ onNavigate }) {
           {filteredCases.map((rc) => (
             <div
               key={rc._id}
-              className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-indigo-300 transition-colors"
+              className="bg-[#0E1526]/90 p-5 rounded-2xl border border-white/[0.08] shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-indigo-500/40 transition-all"
             >
               <div className="flex items-start sm:items-center gap-4">
                 <RiskBadge level={rc.riskLevel} score={rc.riskScore} />
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono font-bold text-slate-900">{rc.caseId}</span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold">{rc.issueType}</span>
+                    <span className="text-xs font-mono font-bold text-white">{rc.caseId}</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.05] border border-white/[0.08] text-slate-300 font-semibold">{rc.issueType}</span>
                   </div>
-                  <h4 className="text-xs font-semibold text-slate-700 mt-1">{rc.customerId?.name || 'Customer'}</h4>
-                  <p className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1">
-                    <Sparkles className="w-3 h-3 text-indigo-500" /> AI Strategy: <strong className="text-indigo-700">{rc.recommendedAction || 'RETRY_PAYMENT'}</strong>
+                  <h4 className="text-xs font-semibold text-slate-200 mt-1">{rc.customerId?.name || 'Customer'}</h4>
+                  <p className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-indigo-400" /> AI Strategy: <strong className="text-indigo-400">{rc.recommendedAction || 'RETRY_PAYMENT'}</strong>
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between sm:justify-end gap-6 pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+              <div className="flex items-center justify-between sm:justify-end gap-6 pt-3 sm:pt-0 border-t sm:border-t-0 border-white/[0.06]">
                 <div className="text-left sm:text-right">
-                  <span className="text-sm font-extrabold text-slate-900 block">{formatPaiseToRupees(rc.amountAtRisk)}</span>
+                  <span className="text-sm font-extrabold text-white block">{formatPaiseToRupees(rc.amountAtRisk)}</span>
                   <span className="text-[10px] text-slate-400">Amount at Risk</span>
                 </div>
                 <StatusBadge status={rc.status} />
                 <button
                   onClick={() => onNavigate(`/recovery-cases/${rc.caseId}`)}
-                  className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors inline-flex items-center gap-1.5 shrink-0"
+                  className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-600/30 transition-all inline-flex items-center gap-1.5 shrink-0 cursor-pointer"
                 >
                   Inspect Case <ArrowRight className="w-3.5 h-3.5" />
                 </button>

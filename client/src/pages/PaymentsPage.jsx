@@ -43,23 +43,23 @@ export default function PaymentsPage({ onNavigate }) {
   return (
     <div className="space-y-6">
       {/* Header & Simulation CTA */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-[#0E1526]/90 p-6 rounded-2xl border border-white/[0.08] shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-            <CreditCard className="w-5 h-5 text-indigo-600" /> Payments Directory
+          <h3 className="text-base font-extrabold text-white flex items-center gap-2">
+            <CreditCard className="w-5 h-5 text-indigo-400" /> Payments Directory
           </h3>
-          <p className="text-xs text-slate-500 mt-1">Audit trail of all incoming payments, gateway attempts, and failure telemetry.</p>
+          <p className="text-xs text-slate-400 mt-1">Audit trail of all incoming payments, gateway attempts, and failure telemetry.</p>
         </div>
 
         <div className="flex items-center gap-3">
           <button
             onClick={() => setShowSimModal(true)}
-            className="px-4 py-2 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white text-xs font-bold rounded-xl shadow-md shadow-amber-600/30 flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
+            className="px-4 py-2 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white text-xs font-bold rounded-xl shadow-lg shadow-amber-600/30 flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
           >
             <Zap className="w-3.5 h-3.5 fill-white" />
             <span>Simulate Live Failure</span>
           </button>
-          <button onClick={loadPayments} className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition-colors cursor-pointer">
+          <button onClick={loadPayments} className="p-2 bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 rounded-xl transition-colors cursor-pointer border border-white/[0.08]">
             <RefreshCw className="w-4 h-4" />
           </button>
         </div>
@@ -73,30 +73,30 @@ export default function PaymentsPage({ onNavigate }) {
 
       {/* Payments Table / Empty State */}
       {payments.length === 0 ? (
-        <div className="bg-white p-12 rounded-2xl border border-slate-200/80 shadow-xs text-center space-y-4">
-          <div className="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 mx-auto flex items-center justify-center">
+        <div className="bg-[#0E1526]/90 p-12 rounded-2xl border border-white/[0.08] shadow-xl text-center space-y-4">
+          <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 text-indigo-400 mx-auto flex items-center justify-center border border-indigo-500/20">
             <CreditCard className="w-7 h-7" />
           </div>
           <div>
-            <h4 className="text-sm font-bold text-slate-900">No Payment Transactions Yet</h4>
-            <p className="text-xs text-slate-500 max-w-md mx-auto mt-1">
+            <h4 className="text-sm font-bold text-white">No Payment Transactions Yet</h4>
+            <p className="text-xs text-slate-400 max-w-md mx-auto mt-1">
               Database is clean. Trigger a live failed checkout simulation to see transactions, failure codes, and retry orders appear here.
             </p>
           </div>
           <button
             onClick={() => setShowSimModal(true)}
-            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md transition-all inline-flex items-center gap-2 cursor-pointer"
+            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-indigo-600/30 transition-all inline-flex items-center gap-2 cursor-pointer"
           >
             <Zap className="w-4 h-4 fill-white" />
             <span>Simulate First Failed Transaction</span>
           </button>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+        <div className="bg-[#0E1526]/90 rounded-2xl border border-white/[0.08] shadow-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                <tr className="bg-white/[0.02] border-b border-white/[0.06] text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                   <th className="py-3.5 px-6">Payment ID</th>
                   <th className="py-3.5 px-6">Provider Order ID</th>
                   <th className="py-3.5 px-6">Amount</th>
@@ -106,16 +106,16 @@ export default function PaymentsPage({ onNavigate }) {
                   <th className="py-3.5 px-6">Created</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-xs">
+              <tbody className="divide-y divide-white/[0.06] text-xs">
                 {filtered.map((p) => (
-                  <tr key={p._id} className="hover:bg-slate-50/60 transition-colors">
-                    <td className="py-4 px-6 font-mono font-bold text-slate-900">{p.externalPaymentId || p._id}</td>
-                    <td className="py-4 px-6 font-mono text-slate-600">{p.providerOrderId || p.externalOrderId || 'N/A'}</td>
-                    <td className="py-4 px-6 font-bold text-slate-900">{formatPaiseToRupees(p.amount)}</td>
-                    <td className="py-4 px-6 font-semibold text-slate-700">{p.paymentMethod || 'UPI'}</td>
+                  <tr key={p._id} className="hover:bg-white/[0.03] transition-colors">
+                    <td className="py-4 px-6 font-mono font-bold text-white">{p.externalPaymentId || p._id}</td>
+                    <td className="py-4 px-6 font-mono text-slate-400">{p.providerOrderId || p.externalOrderId || 'N/A'}</td>
+                    <td className="py-4 px-6 font-bold text-white">{formatPaiseToRupees(p.amount)}</td>
+                    <td className="py-4 px-6 font-semibold text-slate-200">{p.paymentMethod || 'UPI'}</td>
                     <td className="py-4 px-6"><StatusBadge status={p.status} /></td>
-                    <td className="py-4 px-6 font-mono text-rose-600 font-semibold">{p.failureCode || 'NONE'}</td>
-                    <td className="py-4 px-6 text-slate-500">{formatDate(p.createdAt)}</td>
+                    <td className="py-4 px-6 font-mono text-rose-400 font-semibold">{p.failureCode || 'NONE'}</td>
+                    <td className="py-4 px-6 text-slate-400">{formatDate(p.createdAt)}</td>
                   </tr>
                 ))}
               </tbody>

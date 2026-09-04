@@ -102,8 +102,25 @@ router.post('/razorpay', async (req, res) => {
       }
     }
 
-    // Process Payment Success Events
-    if (['payment.captured', 'payment.authorized', 'order.paid', 'payment_link.paid'].includes(eventType)) {
+    // Handle Authorized Only (remain pending - not yet captured/recovered)
+    if (eventType === 'payment.authorized') {
+      if (payment) {
+        payment.status = 'PENDING';
+        payment.providerPaymentId = targetPaymentId || payment.providerPaymentId;
+        payment.lastProviderEventAt = new Date();
+        await payment.save();
+      }
+      if (recoveryCase) {
+        await logAuditEvent({
+          caseId: recoveryCase._id,
+          eventType: 'RAZORPAY_PAYMENT_AUTHORIZED',
+          actorType: 'WEBHOOK',
+          message: `Payment authorized for order ${targetOrderId || targetPaymentId} (awaiting capture before recovery)`,
+          metadata: { eventId, eventType, providerPaymentId: targetPaymentId },
+        });
+      }
+    } else if (['payment.captured', 'order.paid', 'payment_link.paid'].includes(eventType)) {
+      // Process Payment Success / Capture Events
       if (!payment && !recoveryCase) {
         console.warn(`[WEBHOOK] Unmatched event ${eventType} (${targetOrderId || targetPaymentId}). No recovery case found. Ignored safely.`);
         return res.status(200).json({
@@ -113,17 +130,37 @@ router.post('/razorpay', async (req, res) => {
         });
       }
 
-      // Amount Validation (integer paise, positive, not exceeding remaining amount)
-      let verifiedAmount = typeof payloadAmount === 'number' && payloadAmount > 0 ? payloadAmount : null;
-      if (!verifiedAmount && payment && payment.amount > 0) {
-        verifiedAmount = payment.amount;
-      } else if (!verifiedAmount && recoveryCase && recoveryCase.amountAtRisk > 0) {
-        verifiedAmount = recoveryCase.amountAtRisk;
+      // Strict Amount Validation (payload amount required, integer paise, positive, matching currency)
+      const verifiedAmount = typeof payloadAmount === 'number' && Number.isInteger(payloadAmount) && payloadAmount > 0
+        ? payloadAmount
+        : null;
+
+      if (!verifiedAmount) {
+        console.warn(`[WEBHOOK] Invalid or missing provider payload amount (${payloadAmount}) for event ${eventId}. Recovery rejected.`);
+        if (recoveryCase) {
+          await logAuditEvent({
+            caseId: recoveryCase._id,
+            eventType: 'WEBHOOK_AMOUNT_REJECTED',
+            actorType: 'WEBHOOK',
+            message: `Webhook rejected: Provider payload amount is missing or invalid (${payloadAmount})`,
+            metadata: { eventId, eventType, payloadAmount },
+          });
+        }
+        return res.status(400).json({ error: 'Invalid or missing provider payload amount in webhook' });
       }
 
-      if (!verifiedAmount || verifiedAmount <= 0) {
-        console.warn(`[WEBHOOK] Invalid payment amount (${verifiedAmount}) for event ${eventId}. Recovery rejected.`);
-        return res.status(400).json({ error: 'Invalid payment amount in webhook payload' });
+      if (payloadCurrency && payloadCurrency.toUpperCase() !== 'INR') {
+        console.warn(`[WEBHOOK] Currency mismatch: ${payloadCurrency} !== INR for event ${eventId}. Recovery rejected.`);
+        if (recoveryCase) {
+          await logAuditEvent({
+            caseId: recoveryCase._id,
+            eventType: 'WEBHOOK_CURRENCY_REJECTED',
+            actorType: 'WEBHOOK',
+            message: `Webhook rejected: Currency mismatch (${payloadCurrency} !== INR)`,
+            metadata: { eventId, eventType, payloadCurrency },
+          });
+        }
+        return res.status(400).json({ error: 'Unsupported currency in webhook payload' });
       }
 
       if (payment) {
@@ -207,16 +244,23 @@ router.post('/razorpay', async (req, res) => {
     const isConfigured = isRazorpayConfigured();
 
     // Save WebhookEvent document for idempotency
-    await WebhookEvent.create({
-      eventId,
-      eventType,
-      signatureVerified: true,
-      processed: true,
-      processedAt: new Date(),
-      caseId: recoveryCase ? recoveryCase._id : null,
-      paymentId: payment ? payment._id : null,
-      _isDemoData: recoveryCase ? recoveryCase.executionMode === 'SIMULATION' : !isConfigured,
-    });
+    try {
+      await WebhookEvent.create({
+        eventId,
+        eventType,
+        signatureVerified: true,
+        processed: true,
+        processedAt: new Date(),
+        caseId: recoveryCase ? recoveryCase._id : null,
+        paymentId: payment ? payment._id : null,
+        _isDemoData: recoveryCase ? recoveryCase.executionMode === 'SIMULATION' : !isConfigured,
+      });
+    } catch (dupErr) {
+      if (dupErr.code === 11000) {
+        return res.status(200).json({ status: 'ignored', reason: 'Concurrent duplicate event', eventId });
+      }
+      throw dupErr;
+    }
 
     res.status(200).json({ status: 'success', eventId, processed: true });
   } catch (err) {

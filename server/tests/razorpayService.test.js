@@ -10,18 +10,37 @@ describe('Razorpay Integration Service (Test Mode)', () => {
     assert.equal(typeof creds.isConfigured, 'boolean');
   });
 
-  test('creates mock order when credentials not set in test environment', async () => {
-    const order = await razorpayService.createOrder({ amount: 50000 });
+  test('strictly throws in RAZORPAY_TEST_MODE when credentials are not configured (no mock fallback)', async () => {
+    // When credentials are not configured, calling in RAZORPAY_TEST_MODE must fail explicitly
+    const { isConfigured } = razorpayService.getCredentials();
+    if (!isConfigured) {
+      await assert.rejects(
+        () => razorpayService.createOrder({ amount: 50000, mode: 'RAZORPAY_TEST_MODE' }),
+        /Razorpay Test Mode credentials .* are not configured/
+      );
+      await assert.rejects(
+        () => razorpayService.createPaymentLink({ amount: 50000, description: 'Test', mode: 'RAZORPAY_TEST_MODE' }),
+        /Razorpay Test Mode credentials .* are not configured/
+      );
+    }
+  });
+
+  test('creates simulated order when mode is explicitly SIMULATION', async () => {
+    const order = await razorpayService.createOrder({ amount: 50000, mode: 'SIMULATION' });
     assert.ok(order.id);
     assert.equal(order.amount, 50000);
     assert.equal(order.currency, 'INR');
+    assert.equal(order.isSimulated, true);
+    assert.equal(order.executionMode, 'SIMULATION');
   });
 
-  test('creates mock payment link when credentials not set', async () => {
-    const link = await razorpayService.createPaymentLink({ amount: 50000, description: 'Test Link' });
+  test('creates simulated payment link when mode is explicitly SIMULATION', async () => {
+    const link = await razorpayService.createPaymentLink({ amount: 50000, description: 'Test Link', mode: 'SIMULATION' });
     assert.ok(link.id);
     assert.equal(link.amount, 50000);
     assert.ok(link.short_url);
+    assert.equal(link.isSimulated, true);
+    assert.equal(link.executionMode, 'SIMULATION');
   });
 
   test('rejects signature verification with invalid inputs', () => {

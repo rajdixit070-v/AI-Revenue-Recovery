@@ -63,15 +63,15 @@ export default function EvaluationsPage({ onNavigate }) {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="bg-[#0E1526]/90 p-6 rounded-2xl border border-white/[0.08] shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600">
+            <div className="p-2 bg-indigo-500/10 rounded-xl text-indigo-400 border border-indigo-500/20">
               <BarChart2 className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-extrabold text-slate-900">Batch Recovery Evaluation Engine</h2>
-              <p className="text-xs text-slate-500">Benchmark measured money recovered across 100+ cases with compliant policy enforcement.</p>
+              <h2 className="text-base font-extrabold text-white">Batch Recovery Evaluation Engine</h2>
+              <p className="text-xs text-slate-400">Benchmark measured money recovered across 100+ cases with compliant policy enforcement.</p>
             </div>
           </div>
         </div>
@@ -87,15 +87,15 @@ export default function EvaluationsPage({ onNavigate }) {
       </div>
 
       {demoNotice && (
-        <div className="p-4 bg-indigo-50 border border-indigo-200 text-indigo-900 rounded-xl text-xs font-semibold flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-indigo-600 shrink-0" />
+        <div className="p-4 bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 rounded-xl text-xs font-semibold flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-indigo-400 shrink-0" />
           <span>{demoNotice}</span>
         </div>
       )}
 
       {/* Safety Notice Banner */}
-      <div className="p-4 bg-amber-50/80 border border-amber-200/80 rounded-xl text-xs text-amber-900 flex items-start gap-3">
-        <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+      <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs text-amber-300 flex items-start gap-3">
+        <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
         <div>
           <strong className="font-bold">Evaluation Safety Boundary:</strong> All evaluation batches operate under strict <strong>SIMULATION MODE</strong> parameters. Simulated revenue recovery is clearly distinguished from verified Razorpay Test Mode transactions.
         </div>
@@ -103,37 +103,37 @@ export default function EvaluationsPage({ onNavigate }) {
 
       {/* Empty State / Batches Table */}
       {batches.length === 0 ? (
-        <div className="bg-white p-12 rounded-2xl border border-slate-200/80 shadow-xs text-center space-y-4">
-          <div className="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 mx-auto flex items-center justify-center">
+        <div className="bg-[#0E1526]/90 p-12 rounded-2xl border border-white/[0.08] shadow-xl text-center space-y-4">
+          <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 text-indigo-400 mx-auto flex items-center justify-center border border-indigo-500/20">
             <BarChart2 className="w-7 h-7" />
           </div>
           <div>
-            <h4 className="text-sm font-bold text-slate-900">No Evaluation Batches Run Yet</h4>
-            <p className="text-xs text-slate-500 max-w-lg mx-auto mt-1">
+            <h4 className="text-sm font-bold text-white">No Evaluation Batches Run Yet</h4>
+            <p className="text-xs text-slate-400 max-w-lg mx-auto mt-1">
               Click the button below to generate a fresh 100-case evaluation dataset and benchmark the recovery rate (~58.6%) for your buildathon demonstration.
             </p>
           </div>
           <button
             onClick={handleRunDemoEvaluation}
             disabled={startingDemo}
-            className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-lg shadow-indigo-600/25 transition-all inline-flex items-center gap-2 cursor-pointer"
+            className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-indigo-600/30 transition-all inline-flex items-center gap-2 cursor-pointer"
           >
             {startingDemo ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4 fill-white" />}
             <span>{startingDemo ? 'Processing...' : 'Run 100-Case Evaluation Now'}</span>
           </button>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-          <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+        <div className="bg-[#0E1526]/90 rounded-2xl border border-white/[0.08] shadow-xl overflow-hidden">
+          <div className="p-4 border-b border-white/[0.06] flex items-center justify-between">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Evaluation History</h3>
-            <button onClick={loadBatches} className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg cursor-pointer">
+            <button onClick={loadBatches} className="p-1.5 bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 rounded-lg cursor-pointer border border-white/[0.08]">
               <RefreshCw className="w-3.5 h-3.5" />
             </button>
           </div>
 
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              <tr className="bg-white/[0.02] border-b border-white/[0.06] text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                 <th className="py-3.5 px-6">Batch ID</th>
                 <th className="py-3.5 px-6">Mode</th>
                 <th className="py-3.5 px-6">Progress</th>
@@ -144,24 +144,24 @@ export default function EvaluationsPage({ onNavigate }) {
                 <th className="py-3.5 px-6 text-right">Report</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-xs">
+            <tbody className="divide-y divide-white/[0.06] text-xs">
               {batches.map((b) => (
-                <tr key={b._id} className="hover:bg-slate-50/60 transition-colors">
-                  <td className="py-4 px-6 font-mono font-bold text-slate-900">{b.batchId}</td>
+                <tr key={b._id} className="hover:bg-white/[0.03] transition-colors">
+                  <td className="py-4 px-6 font-mono font-bold text-white">{b.batchId}</td>
                   <td className="py-4 px-6">
                     <EnvironmentIndicator mode={b.mode === 'RAZORPAY_TEST' ? 'RAZORPAY TEST MODE' : 'SIMULATION MODE'} />
                   </td>
-                  <td className="py-4 px-6 font-semibold text-slate-800">
+                  <td className="py-4 px-6 font-semibold text-slate-300">
                     {b.processedCases} / {b.totalCases} cases
                   </td>
-                  <td className="py-4 px-6 font-bold text-slate-900">{formatPaiseToRupees(b.totalAmountAtRisk)}</td>
-                  <td className="py-4 px-6 font-bold text-emerald-600">{formatPaiseToRupees(b.totalRecoveredAmount)}</td>
-                  <td className="py-4 px-6 font-extrabold text-indigo-700">{b.recoveryRate}%</td>
+                  <td className="py-4 px-6 font-bold text-white">{formatPaiseToRupees(b.totalAmountAtRisk)}</td>
+                  <td className="py-4 px-6 font-bold text-emerald-400">{formatPaiseToRupees(b.totalRecoveredAmount)}</td>
+                  <td className="py-4 px-6 font-extrabold text-indigo-400">{b.recoveryRate}%</td>
                   <td className="py-4 px-6">
                     <span className={`px-2.5 py-0.5 rounded text-xs font-bold ${
-                      b.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
-                      b.status === 'RUNNING' ? 'bg-amber-50 text-amber-700 border border-amber-200 animate-pulse' :
-                      'bg-slate-100 text-slate-600 border border-slate-300'
+                      b.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                      b.status === 'RUNNING' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse' :
+                      'bg-white/[0.05] text-slate-300 border border-white/[0.08]'
                     }`}>
                       {b.status}
                     </span>
@@ -169,7 +169,7 @@ export default function EvaluationsPage({ onNavigate }) {
                   <td className="py-4 px-6 text-right">
                     <button
                       onClick={() => onNavigate(`/evaluations/${b.batchId}`)}
-                      className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800 cursor-pointer"
+                      className="inline-flex items-center gap-1 text-xs font-bold text-indigo-400 hover:text-indigo-300 cursor-pointer"
                     >
                       View Report &rarr;
                     </button>

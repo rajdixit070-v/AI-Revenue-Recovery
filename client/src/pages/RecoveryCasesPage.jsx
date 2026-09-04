@@ -57,7 +57,8 @@ export default function RecoveryCasesPage({ onNavigate }) {
   return (
     <div className="space-y-6">
       {/* Header & Controls */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Header & Controls */}
+      <div className="bg-[#0E1526]/90 p-5 md:p-6 rounded-2xl border border-white/[0.07] backdrop-blur-xl shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="relative flex-1 max-w-md">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
           <input
@@ -65,7 +66,7 @@ export default function RecoveryCasesPage({ onNavigate }) {
             placeholder="Search by Case ID, Customer, or Issue..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600"
+            className="w-full pl-10 pr-4 py-2 bg-white/[0.03] border border-white/[0.08] rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
           />
         </div>
 
@@ -73,41 +74,41 @@ export default function RecoveryCasesPage({ onNavigate }) {
         <div className="flex flex-wrap items-center gap-3 text-xs">
           <button
             onClick={() => setShowSimModal(true)}
-            className="px-4 py-2 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold rounded-xl shadow-md shadow-amber-600/25 flex items-center gap-1.5 transition-all cursor-pointer"
+            className="px-4 py-2 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-black rounded-xl shadow-lg shadow-amber-600/20 flex items-center gap-1.5 transition-all cursor-pointer"
           >
-            <Zap className="w-3.5 h-3.5 fill-white" />
+            <Zap className="w-3.5 h-3.5" />
             <span>Simulate Live Failure</span>
           </button>
 
           <select
             value={filterRisk}
             onChange={(e) => setFilterRisk(e.target.value)}
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 font-semibold focus:outline-none"
+            className="px-3 py-2 bg-white/[0.03] border border-white/[0.08] rounded-xl text-slate-300 font-semibold focus:outline-none"
           >
-            <option value="">All Risk Levels</option>
-            <option value="LOW">Low Risk</option>
-            <option value="MEDIUM">Medium Risk</option>
-            <option value="HIGH">High Risk</option>
-            <option value="CRITICAL">Critical Risk</option>
+            <option value="" className="bg-[#0E162B]">All Risk Levels</option>
+            <option value="LOW" className="bg-[#0E162B]">Low Risk</option>
+            <option value="MEDIUM" className="bg-[#0E162B]">Medium Risk</option>
+            <option value="HIGH" className="bg-[#0E162B]">High Risk</option>
+            <option value="CRITICAL" className="bg-[#0E162B]">Critical Risk</option>
           </select>
 
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 font-semibold focus:outline-none"
+            className="px-3 py-2 bg-white/[0.03] border border-white/[0.08] rounded-xl text-slate-300 font-semibold focus:outline-none"
           >
-            <option value="">All Statuses</option>
-            <option value="OPEN">Open</option>
-            <option value="ANALYZING">Analyzing</option>
-            <option value="ACTION_PENDING">Action Pending</option>
-            <option value="IN_RECOVERY">In Recovery</option>
-            <option value="RECOVERED">Recovered</option>
-            <option value="ESCALATED">Escalated</option>
-            <option value="EXPIRED">Expired</option>
-            <option value="CLOSED">Closed</option>
+            <option value="" className="bg-[#0E162B]">All Statuses</option>
+            <option value="OPEN" className="bg-[#0E162B]">Open</option>
+            <option value="ANALYZING" className="bg-[#0E162B]">Analyzing</option>
+            <option value="ACTION_PENDING" className="bg-[#0E162B]">Action Pending</option>
+            <option value="IN_RECOVERY" className="bg-[#0E162B]">In Recovery</option>
+            <option value="RECOVERED" className="bg-[#0E162B]">Recovered</option>
+            <option value="ESCALATED" className="bg-[#0E162B]">Escalated</option>
+            <option value="EXPIRED" className="bg-[#0E162B]">Expired</option>
+            <option value="CLOSED" className="bg-[#0E162B]">Closed</option>
           </select>
 
-          <button onClick={loadCases} className="p-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-600 transition-colors cursor-pointer">
+          <button onClick={loadCases} className="p-2 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-xl text-slate-300 transition-colors cursor-pointer">
             <RefreshCw className="w-4 h-4" />
           </button>
         </div>
@@ -127,11 +128,11 @@ export default function RecoveryCasesPage({ onNavigate }) {
       ) : filteredCases.length === 0 ? (
         <EmptyState title="No recovery cases found" message="Try adjusting your search or filter parameters." />
       ) : (
-        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+        <div className="bg-[#0E1526]/90 rounded-2xl border border-white/[0.07] shadow-xl overflow-hidden backdrop-blur-xl">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                <tr className="bg-white/[0.02] border-b border-white/[0.06] text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                   <th className="py-3.5 px-6">Case ID</th>
                   <th className="py-3.5 px-6">Customer</th>
                   <th className="py-3.5 px-6">Issue Category</th>
@@ -142,24 +143,24 @@ export default function RecoveryCasesPage({ onNavigate }) {
                   <th className="py-3.5 px-6 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-xs">
+              <tbody className="divide-y divide-white/[0.04] text-xs">
                 {filteredCases.map((rc) => (
-                  <tr key={rc._id} className="hover:bg-slate-50/60 transition-colors">
-                    <td className="py-4 px-6 font-mono font-bold text-slate-900">{rc.caseId}</td>
-                    <td className="py-4 px-6 font-semibold text-slate-800">{rc.customerId?.name || 'Customer'}</td>
-                    <td className="py-4 px-6 text-slate-600 font-medium">{rc.issueType}</td>
-                    <td className="py-4 px-6 font-bold text-slate-900">{formatPaiseToRupees(rc.amountAtRisk)}</td>
+                  <tr key={rc._id} className="hover:bg-white/[0.03] transition-colors">
+                    <td className="py-4 px-6 font-mono font-bold text-cyan-300">{rc.caseId}</td>
+                    <td className="py-4 px-6 font-semibold text-slate-200">{rc.customerId?.name || 'Customer'}</td>
+                    <td className="py-4 px-6 text-slate-400 font-medium">{rc.issueType}</td>
+                    <td className="py-4 px-6 font-bold text-white">{formatPaiseToRupees(rc.amountAtRisk)}</td>
                     <td className="py-4 px-6">
                       <RiskBadge level={rc.riskLevel} score={rc.riskScore} />
                     </td>
-                    <td className="py-4 px-6 font-bold text-indigo-700">{rc.recommendedAction || 'N/A'}</td>
+                    <td className="py-4 px-6 font-bold text-indigo-400">{rc.recommendedAction || 'N/A'}</td>
                     <td className="py-4 px-6">
                       <StatusBadge status={rc.status} />
                     </td>
                     <td className="py-4 px-6 text-right">
                       <button
                         onClick={() => onNavigate(`/recovery-cases/${rc.caseId}`)}
-                        className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800"
+                        className="inline-flex items-center gap-1 text-xs font-bold text-indigo-400 hover:text-indigo-300 cursor-pointer"
                       >
                         View &rarr;
                       </button>
@@ -171,20 +172,20 @@ export default function RecoveryCasesPage({ onNavigate }) {
           </div>
 
           {/* Pagination */}
-          <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between text-xs text-slate-600 font-medium">
+          <div className="p-4 border-t border-white/[0.06] bg-white/[0.01] flex items-center justify-between text-xs text-slate-400 font-medium">
             <span>Page {page} of {totalPages}</span>
             <div className="flex items-center gap-2">
               <button
                 disabled={page <= 1}
                 onClick={() => setPage(page - 1)}
-                className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg hover:bg-slate-100 disabled:opacity-50"
+                className="px-3 py-1.5 bg-white/[0.03] border border-white/[0.08] rounded-lg hover:bg-white/[0.08] text-slate-300 disabled:opacity-30 cursor-pointer"
               >
                 Previous
               </button>
               <button
                 disabled={page >= totalPages}
                 onClick={() => setPage(page + 1)}
-                className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg hover:bg-slate-100 disabled:opacity-50"
+                className="px-3 py-1.5 bg-white/[0.03] border border-white/[0.08] rounded-lg hover:bg-white/[0.08] text-slate-300 disabled:opacity-30 cursor-pointer"
               >
                 Next
               </button>

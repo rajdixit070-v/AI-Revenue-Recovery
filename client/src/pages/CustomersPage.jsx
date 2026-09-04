@@ -33,34 +33,34 @@ export default function CustomersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-[#0E1526]/90 p-6 rounded-2xl border border-white/[0.08] shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-            <Users className="w-5 h-5 text-indigo-600" /> Customer Lifetime Directory
+          <h3 className="text-base font-extrabold text-white flex items-center gap-2">
+            <Users className="w-5 h-5 text-indigo-400" /> Customer Lifetime Directory
           </h3>
-          <p className="text-xs text-slate-500 mt-1">Tracks customer payment reliability, LTV, and historical recovery rates.</p>
+          <p className="text-xs text-slate-400 mt-1">Tracks customer payment reliability, LTV, and historical recovery rates.</p>
         </div>
-        <button onClick={loadCustomers} className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition-colors cursor-pointer">
+        <button onClick={loadCustomers} className="p-2 bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 rounded-xl transition-colors cursor-pointer border border-white/[0.08]">
           <RefreshCw className="w-4 h-4" />
         </button>
       </div>
 
       {customers.length === 0 ? (
-        <div className="bg-white p-12 rounded-2xl border border-slate-200/80 shadow-xs text-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 mx-auto flex items-center justify-center">
+        <div className="bg-[#0E1526]/90 p-12 rounded-2xl border border-white/[0.08] shadow-xl text-center space-y-3">
+          <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 text-indigo-400 mx-auto flex items-center justify-center border border-indigo-500/20">
             <UserCheck className="w-7 h-7" />
           </div>
-          <h4 className="text-sm font-bold text-slate-900">No Customer Records Yet</h4>
-          <p className="text-xs text-slate-500 max-w-md mx-auto">
+          <h4 className="text-sm font-bold text-white">No Customer Records Yet</h4>
+          <p className="text-xs text-slate-400 max-w-md mx-auto">
             Customers will automatically be created and tracked here as payment failures or recoveries are processed.
           </p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+        <div className="bg-[#0E1526]/90 rounded-2xl border border-white/[0.08] shadow-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                <tr className="bg-white/[0.02] border-b border-white/[0.06] text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                   <th className="py-3.5 px-6">Customer</th>
                   <th className="py-3.5 px-6">Email</th>
                   <th className="py-3.5 px-6">Status</th>
@@ -69,15 +69,15 @@ export default function CustomersPage() {
                   <th className="py-3.5 px-6">Failed Payments</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-xs">
+              <tbody className="divide-y divide-white/[0.06] text-xs">
                 {filtered.map((c) => (
-                  <tr key={c._id} className="hover:bg-slate-50/60 transition-colors">
-                    <td className="py-4 px-6 font-bold text-slate-900">{c.name}</td>
-                    <td className="py-4 px-6 text-slate-600 font-mono">{c.email}</td>
-                    <td className="py-4 px-6"><span className="px-2 py-0.5 rounded text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">{c.status}</span></td>
-                    <td className="py-4 px-6 font-bold text-slate-900">{formatPaiseToRupees(c.lifetimeValue)}</td>
-                    <td className="py-4 px-6 text-emerald-600 font-bold">{c.successfulPayments || 0}</td>
-                    <td className="py-4 px-6 text-rose-600 font-bold">{c.failedPayments || 0}</td>
+                  <tr key={c._id} className="hover:bg-white/[0.03] transition-colors">
+                    <td className="py-4 px-6 font-bold text-white">{c.name}</td>
+                    <td className="py-4 px-6 text-slate-300 font-mono">{c.email}</td>
+                    <td className="py-4 px-6"><span className="px-2 py-0.5 rounded text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">{c.status}</span></td>
+                    <td className="py-4 px-6 font-bold text-white">{formatPaiseToRupees(c.lifetimeValue)}</td>
+                    <td className="py-4 px-6 text-emerald-400 font-bold">{c.successfulPayments || 0}</td>
+                    <td className="py-4 px-6 text-rose-400 font-bold">{c.failedPayments || 0}</td>
                   </tr>
                 ))}
               </tbody>

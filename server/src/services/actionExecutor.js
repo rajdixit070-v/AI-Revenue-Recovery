@@ -48,6 +48,7 @@ async function executeAction(action, context = {}) {
         caseId: recoveryCase.caseId,
         customerId: customer ? customer.externalCustomerId : '',
       },
+      mode: executionMode,
     });
     providerReference = razorpayResult.id;
 
@@ -70,6 +71,7 @@ async function executeAction(action, context = {}) {
       },
       reference_id: `ref_${recoveryCase.caseId}_${Date.now()}`,
       notes: { caseId: recoveryCase.caseId },
+      mode: executionMode,
     });
     providerReference = razorpayResult.id;
   } else if (action === 'SEND_REMINDER') {

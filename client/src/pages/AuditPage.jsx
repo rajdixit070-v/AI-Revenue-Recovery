@@ -17,12 +17,12 @@ export default function AuditPage() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
-        <h3 className="text-base font-bold text-slate-900">Immutable Audit Trail</h3>
-        <p className="text-xs text-slate-500 mt-1">Append-only record of every system event, AI decision, and payment verification.</p>
+      <div className="bg-[#0E1526]/90 p-6 rounded-2xl border border-white/[0.08] shadow-xl">
+        <h3 className="text-base font-bold text-white">Immutable Audit Trail</h3>
+        <p className="text-xs text-slate-400 mt-1">Append-only record of every system event, AI decision, and payment verification.</p>
       </div>
 
-      <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
+      <div className="bg-[#0E1526]/90 p-6 rounded-2xl border border-white/[0.08] shadow-xl">
         <Timeline logs={logs} />
       </div>
     </div>

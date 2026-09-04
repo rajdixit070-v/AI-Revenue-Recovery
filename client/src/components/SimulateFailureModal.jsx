@@ -88,11 +88,11 @@ export default function SimulateFailureModal({ isOpen, onClose, onSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-5 text-slate-100 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+    <div className="fixed inset-0 z-50 bg-[#080C14]/80 backdrop-blur-md flex items-center justify-center p-4">
+      <div className="bg-[#0E162B] border border-white/[0.08] rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-5 text-slate-100 max-h-[90vh] overflow-y-auto backdrop-blur-2xl">
+        <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center shadow-[0_0_10px_rgba(245,158,11,0.2)]">
               <Zap className="w-5 h-5" />
             </div>
             <div>
@@ -106,12 +106,12 @@ export default function SimulateFailureModal({ isOpen, onClose, onSuccess }) {
         </div>
 
         {error && (
-          <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-xs text-rose-300">
+          <div className="p-3 bg-rose-500/15 border border-rose-500/30 rounded-xl text-xs text-rose-300">
             {error}
           </div>
         )}
 
-        {/* 4 Hero Scenarios (Phase 37) */}
+        {/* 4 Hero Scenarios */}
         <div className="space-y-2">
           <div className="flex items-center gap-1.5 text-xs font-bold text-amber-400">
             <Star className="w-3.5 h-3.5 fill-amber-400" />
@@ -123,7 +123,7 @@ export default function SimulateFailureModal({ isOpen, onClose, onSuccess }) {
                 key={sc.id}
                 type="button"
                 onClick={() => selectHeroScenario(sc)}
-                className="p-2.5 bg-slate-950/80 hover:bg-slate-800 border border-slate-800 rounded-xl text-left transition-all cursor-pointer group"
+                className="p-3 bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.06] hover:border-amber-500/30 rounded-xl text-left transition-all cursor-pointer group"
               >
                 <span className="font-bold text-[11px] text-white block group-hover:text-amber-300">{sc.label}</span>
                 <span className="text-[10px] text-slate-400 block mt-0.5">{sc.tag}</span>
@@ -132,7 +132,7 @@ export default function SimulateFailureModal({ isOpen, onClose, onSuccess }) {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-3.5 text-xs pt-1 border-t border-slate-800">
+        <form onSubmit={handleSubmit} className="space-y-3.5 text-xs pt-2 border-t border-white/[0.06]">
           <div className="space-y-1">
             <label className="text-slate-300 font-semibold block">Customer / Company Name</label>
             <div className="relative">
@@ -142,7 +142,7 @@ export default function SimulateFailureModal({ isOpen, onClose, onSuccess }) {
                 required
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white font-medium focus:outline-none focus:border-indigo-500"
+                className="w-full pl-9 pr-3 py-2 bg-white/[0.03] border border-white/[0.08] rounded-xl text-white font-medium focus:outline-none focus:border-indigo-500"
               />
             </div>
           </div>

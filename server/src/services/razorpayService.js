@@ -43,19 +43,25 @@ function getRazorpayInstance() {
 }
 
 /**
- * Create a Razorpay Order in Test Mode
+ * Create a Razorpay Order
+ * If mode is RAZORPAY_TEST_MODE:
+ *   - Credentials must be configured (throws otherwise)
+ *   - Never falls back to mock order
+ *   - Real API errors are surfaced
+ * If mode is SIMULATION:
+ *   - Generates truthful simulated order labeled executionMode: 'SIMULATION'
  */
 async function createOrder(params = {}) {
-  const { amount, currency = 'INR', receipt, notes = {} } = params;
+  const { amount, currency = 'INR', receipt, notes = {}, mode = 'RAZORPAY_TEST_MODE' } = params;
 
-  if (!amount || amount <= 0) {
-    throw new Error('Valid amount in paise is required to create a Razorpay order.');
+  if (!amount || amount <= 0 || !Number.isInteger(amount)) {
+    throw new Error('Valid amount in integer paise is required to create a Razorpay order.');
   }
 
   const { isConfigured } = getCredentials();
 
-  if (!isConfigured) {
-    const mockId = `order_test_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+  if (mode === 'SIMULATION') {
+    const mockId = `sim_order_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
     return {
       id: mockId,
       entity: 'order',
@@ -63,101 +69,92 @@ async function createOrder(params = {}) {
       amount_paid: 0,
       amount_due: amount,
       currency,
-      receipt: receipt || `rcpt_${Date.now()}`,
+      receipt: receipt || `rcpt_sim_${Date.now()}`,
       status: 'created',
       attempts: 0,
       notes,
       created_at: Math.floor(Date.now() / 1000),
-      isMock: true,
+      isSimulated: true,
+      executionMode: 'SIMULATION',
     };
   }
 
-  try {
-    const instance = getRazorpayInstance();
-    return await instance.orders.create({
-      amount,
-      currency,
-      receipt: receipt || `rcpt_${Date.now()}`,
-      notes,
-    });
-  } catch (err) {
-    if (err.statusCode === 401 || err.error?.code === 'BAD_REQUEST_ERROR' || !process.env.RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID.includes('sample')) {
-      const mockId = `order_test_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
-      return {
-        id: mockId,
-        entity: 'order',
-        amount,
-        amount_paid: 0,
-        amount_due: amount,
-        currency,
-        receipt: receipt || `rcpt_${Date.now()}`,
-        status: 'created',
-        attempts: 0,
-        notes,
-        created_at: Math.floor(Date.now() / 1000),
-        isMock: true,
-      };
-    }
-    throw err;
+  // RAZORPAY_TEST_MODE: Strict adherence, no silent mock fallback
+  if (!isConfigured) {
+    throw new Error('Razorpay Test Mode credentials (RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET) are not configured. Cannot execute in RAZORPAY_TEST_MODE.');
   }
+
+  const instance = getRazorpayInstance();
+  return await instance.orders.create({
+    amount,
+    currency,
+    receipt: receipt || `rcpt_${Date.now()}`,
+    notes,
+  });
 }
 
 /**
- * Create a Razorpay Payment Link in Test Mode
+ * Create a Razorpay Payment Link
+ * If mode is RAZORPAY_TEST_MODE:
+ *   - Credentials must be configured (throws otherwise)
+ *   - Never falls back to mock link
+ *   - Real API errors are surfaced
+ * If mode is SIMULATION:
+ *   - Generates truthful simulated payment link labeled executionMode: 'SIMULATION'
  */
 async function createPaymentLink(params = {}) {
-  const { amount, currency = 'INR', description = 'RecoverAI Revenue Recovery Link', customer = {}, reference_id, notes = {} } = params;
+  const {
+    amount,
+    currency = 'INR',
+    description = 'RecoverAI Revenue Recovery Link',
+    customer = {},
+    reference_id,
+    notes = {},
+    mode = 'RAZORPAY_TEST_MODE',
+  } = params;
+
+  if (!amount || amount <= 0 || !Number.isInteger(amount)) {
+    throw new Error('Valid amount in integer paise is required to create a payment link.');
+  }
 
   const { isConfigured } = getCredentials();
 
-  if (!isConfigured) {
-    const mockLinkId = `plink_test_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+  if (mode === 'SIMULATION') {
+    const mockLinkId = `sim_plink_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
     return {
       id: mockLinkId,
       entity: 'payment_link',
       amount,
       currency,
       description,
-      short_url: `https://rzp.test/l/${mockLinkId}`,
+      short_url: `https://recoverai.simulation/l/${mockLinkId}`,
       status: 'created',
       customer,
-      reference_id: reference_id || `ref_${Date.now()}`,
+      reference_id: reference_id || `sim_ref_${Date.now()}`,
       notes,
-      isMock: true,
+      isSimulated: true,
+      executionMode: 'SIMULATION',
     };
   }
 
-  try {
-    const instance = getRazorpayInstance();
-    return await instance.paymentLink.create({
-      amount,
-      currency,
-      description,
-      customer: {
-        name: customer.name || 'Customer',
-        email: customer.email || 'customer@example.com',
-        contact: customer.phone || '+919999999999',
-      },
-      reference_id: reference_id || `ref_${Date.now()}`,
-      notes,
-    });
-  } catch (err) {
-    if (err.statusCode === 401 || err.error?.code === 'BAD_REQUEST_ERROR' || !process.env.RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID.includes('sample')) {
-      const mockLinkId = `plink_test_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
-      return {
-        id: mockLinkId,
-        entity: 'payment_link',
-        amount,
-        currency,
-        description,
-        short_url: `https://rzp.test/l/${mockLinkId}`,
-        status: 'created',
-        notes,
-        isMock: true,
-      };
-    }
-    throw err;
+  // RAZORPAY_TEST_MODE: Strict adherence, no silent mock fallback
+  if (!isConfigured) {
+    throw new Error('Razorpay Test Mode credentials (RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET) are not configured. Cannot execute in RAZORPAY_TEST_MODE.');
   }
+
+  const instance = getRazorpayInstance();
+  return await instance.paymentLink.create({
+    amount,
+    currency,
+    description,
+    customer: {
+      name: customer.name || 'Customer',
+      email: customer.email || 'customer@example.com',
+      contact: customer.phone || '+919999999999',
+    },
+    reference_id: reference_id || `ref_${Date.now()}`,
+    notes,
+  });
 }
 
 /**
