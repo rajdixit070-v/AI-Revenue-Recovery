@@ -11,7 +11,7 @@ const { getFallbackRecommendation } = require('../fallbackDecisionEngine');
 async function generateRecoveryDecision(systemPrompt, userPrompt, context = {}) {
   const mode = (process.env.AI_MODE || 'simulation').toLowerCase();
 
-  if (mode === 'gemini' || mode === 'live') {
+  if (!context.forceSimulation && (mode === 'gemini' || mode === 'live')) {
     try {
       const rawOutput = await geminiProvider.generateContent(systemPrompt, userPrompt);
       return { provider: 'GEMINI', rawOutput, isSimulation: false };

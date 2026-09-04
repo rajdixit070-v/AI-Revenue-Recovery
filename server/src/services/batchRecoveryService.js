@@ -154,8 +154,8 @@ async function processSingleBatchCase(batch, caseItem, policy) {
     const riskAssessment = calculateRiskScore({ amountAtRisk: recoveryCase.amountAtRisk, payment, customer, recoveryCase });
     const diagnosis = diagnoseCase({ recoveryCase, payment, customer, riskAssessment });
 
-    // 3. AI / Decision Service
-    const aiResult = await getDecision({ recoveryCase, payment, customer, riskAssessment, diagnosis, policy });
+    // 3. AI / Decision Service (Uses optimized simulation model for high-throughput batch evaluation)
+    const aiResult = await getDecision({ recoveryCase, payment, customer, riskAssessment, diagnosis, policy, forceSimulation: true });
     const decision = aiResult.decision;
     decisionSource = aiResult.isFallback ? 'FALLBACK' : 'AI';
 

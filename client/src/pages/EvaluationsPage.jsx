@@ -34,7 +34,7 @@ export default function EvaluationsPage({ onNavigate }) {
 
   const handleRunDemoEvaluation = async () => {
     setStartingDemo(true);
-    setDemoNotice('Generating synthetic 100-case dataset and executing AI benchmark...');
+    setDemoNotice('Generating synthetic 100-case dataset and starting benchmark...');
     try {
       const createRes = await api.createBatch({
         name: '100-Case Benchmark Evaluation',
@@ -45,12 +45,30 @@ export default function EvaluationsPage({ onNavigate }) {
       const batchId = createRes.data.batchId;
       await api.runBatch(batchId);
 
-      setDemoNotice(`Batch evaluation ${batchId} completed! Loading report...`);
+      // Poll until batch is COMPLETED
+      let completed = false;
+      let attempts = 0;
+      while (!completed && attempts < 40) {
+        attempts++;
+        await new Promise(r => setTimeout(r, 1000));
+        try {
+          const checkRes = await api.getBatchById(batchId);
+          const b = checkRes.data;
+          if (b.status === 'COMPLETED') {
+            completed = true;
+            setDemoNotice(`Batch evaluation ${batchId} completed! (100/100 cases processed). Loading report...`);
+            break;
+          } else {
+            setDemoNotice(`Running AI evaluation... (${b.processedCases || 0}/100 cases evaluated)`);
+          }
+        } catch (_) {}
+      }
+
       loadBatches();
 
       setTimeout(() => {
         onNavigate(`/evaluations/${batchId}`);
-      }, 1500);
+      }, 1000);
     } catch (err) {
       setDemoNotice(`Failed to start evaluation: ${err.message}`);
     } finally {
