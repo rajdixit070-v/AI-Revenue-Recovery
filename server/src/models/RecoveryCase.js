@@ -107,6 +107,8 @@ const recoveryCaseSchema = new mongoose.Schema(
       enum: ['NONE', 'PENDING', 'FULFILLED', 'BROKEN'],
       default: 'NONE',
     },
+    paymentLinkUrl: { type: String, default: null },
+    paymentLinkId: { type: String, default: null },
     executionMode: {
       type: String,
       enum: ['RAZORPAY_TEST_MODE', 'SIMULATION'],

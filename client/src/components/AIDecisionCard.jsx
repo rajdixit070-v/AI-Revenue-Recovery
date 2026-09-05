@@ -80,10 +80,12 @@ export default function AIDecisionCard({ aiDecision, diagnosis, risk, policyDeci
                     : 'bg-white/[0.02] border-white/[0.06] hover:border-white/[0.1]'
                 }`}
               >
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="font-bold text-white text-[11px] font-mono">{strat.action}</span>
+                <div className="flex items-center justify-between gap-1 mb-2">
+                  <span className="font-bold text-white text-[11px] font-mono truncate" title={strat.action}>
+                    {strat.action.replace(/_/g, ' ')}
+                  </span>
                   {isSelected && (
-                    <span className="text-[9px] font-extrabold px-1.5 py-0.5 bg-indigo-500 text-white rounded-full">
+                    <span className="text-[8px] font-black px-1.5 py-0.5 bg-indigo-500 text-white rounded-md shrink-0 shadow-xs">
                       SELECTED
                     </span>
                   )}

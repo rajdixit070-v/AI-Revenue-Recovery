@@ -123,6 +123,10 @@ async function executeAction(action, context = {}) {
   if (action === 'RETRY_PAYMENT') recoveryCase.retryCount = (recoveryCase.retryCount || 0) + 1;
   if (action === 'SEND_REMINDER') recoveryCase.reminderCount = (recoveryCase.reminderCount || 0) + 1;
   if (action === 'ESCALATE') recoveryCase.escalationLevel = (recoveryCase.escalationLevel || 0) + 1;
+  if (action === 'CREATE_PAYMENT_LINK') {
+    recoveryCase.paymentLinkUrl = razorpayResult?.short_url || null;
+    recoveryCase.paymentLinkId = razorpayResult?.id || null;
+  }
   recoveryCase.lastActionAt = new Date();
   recoveryCase.executionMode = executionMode;
 

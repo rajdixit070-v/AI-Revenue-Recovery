@@ -26,7 +26,12 @@ export default function PolicyDecisionCard({ policyDecision, proposedAction }) {
       </div>
 
       <div className="mt-4 space-y-2 text-xs">
-        <div className="font-semibold text-slate-300">Proposed Action: <span className="text-white font-bold">{proposedAction}</span></div>
+        <div className="font-semibold text-slate-300 flex items-center gap-2 flex-wrap">
+          <span>Proposed Action:</span>
+          <span className="text-white font-black px-2.5 py-0.5 rounded-md bg-white/[0.06] border border-white/[0.1] font-mono text-[11px]">
+            {proposedAction.replace(/_/g, ' ')}
+          </span>
+        </div>
 
         {allowed ? (
           <div className="space-y-1.5 mt-2">

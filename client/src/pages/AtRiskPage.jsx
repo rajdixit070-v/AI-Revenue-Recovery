@@ -120,7 +120,7 @@ export default function AtRiskPage({ onNavigate }) {
                   </div>
                   <h4 className="text-xs font-semibold text-slate-200 mt-1">{rc.customerId?.name || 'Customer'}</h4>
                   <p className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
-                    <Sparkles className="w-3 h-3 text-indigo-400" /> AI Strategy: <strong className="text-indigo-400">{rc.recommendedAction || 'RETRY_PAYMENT'}</strong>
+                    <Sparkles className="w-3 h-3 text-indigo-400" /> AI Strategy: <strong className="text-indigo-400 font-mono text-[11px]">{(rc.recommendedAction || 'RETRY_PAYMENT').replace(/_/g, ' ')}</strong>
                   </p>
                 </div>
               </div>

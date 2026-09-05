@@ -10,7 +10,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import LoadingState from '../components/LoadingState';
 import ErrorState from '../components/ErrorState';
 import RazorpayCheckoutModal from '../components/RazorpayCheckoutModal';
-import { Play, Sparkles, ShieldCheck, DollarSign, ArrowLeft, CheckCircle2, Zap, RefreshCw, Bot, Check, MessageSquare, PhoneCall, Calendar, Copy, CreditCard, Layers, Clock, AlertCircle } from 'lucide-react';
+import { Play, Sparkles, ShieldCheck, DollarSign, ArrowLeft, CheckCircle2, Zap, RefreshCw, Bot, Check, MessageSquare, PhoneCall, Calendar, Copy, CreditCard, Layers, Clock, AlertCircle, Link2, ExternalLink, Share2 } from 'lucide-react';
 
 export default function CaseDetailPage({ caseId, onNavigate }) {
   const [caseData, setCaseData] = useState(null);
@@ -31,6 +31,7 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
   const [ptpDate, setPtpDate] = useState('');
   const [ptpSuccess, setPtpSuccess] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const loadCase = async (skipAi = false) => {
     setLoading(true);
@@ -86,6 +87,23 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
     } catch (err) {
       setExecutionMessage({ type: 'error', text: err.message || 'Execution failed.' });
       setShowConfirm(false);
+    } finally {
+      setExecuting(false);
+    }
+  };
+
+  const handleGeneratePaymentLink = async () => {
+    setExecuting(true);
+    setExecutionMessage(null);
+    try {
+      const res = await api.executeCase(caseId, 'CREATE_PAYMENT_LINK');
+      setExecutionMessage({
+        type: 'success',
+        text: `🔗 Payment Link Generated Successfully! Ready to share with customer.`,
+      });
+      loadCase(true);
+    } catch (err) {
+      setExecutionMessage({ type: 'error', text: err.message || 'Failed to generate payment link' });
     } finally {
       setExecuting(false);
     }
@@ -266,6 +284,18 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
             </button>
           )}
 
+          {!isRecovered && !c.paymentLinkUrl && (
+            <button
+              onClick={handleGeneratePaymentLink}
+              disabled={executing}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 text-xs font-black rounded-xl shadow-lg shadow-amber-600/25 transition-all cursor-pointer disabled:opacity-50"
+              title="Generate a dynamic Razorpay Smart Payment Link for this customer"
+            >
+              <Link2 className="w-4 h-4" />
+              <span>{executing ? 'Generating...' : 'Generate Payment Link'}</span>
+            </button>
+          )}
+
           {!isRecovered && (
             <>
               <button
@@ -387,6 +417,53 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
           </div>
         {/* Right Column: AI & Hinglish Generator & Policy & Mandate Cards */}
         <div className="md:col-span-2 space-y-6">
+          {/* Active Razorpay Smart Payment Link Card */}
+          {c.paymentLinkUrl && !isRecovered && (
+            <div className="bg-gradient-to-r from-blue-950/40 via-[#0E1526] to-[#0A0E1A] p-5 rounded-2xl border border-blue-500/30 shadow-xl space-y-3 animate-in fade-in duration-300">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                    <Link2 className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-white uppercase tracking-wider">Active Razorpay Smart Payment Link</h4>
+                    <p className="text-[11px] text-slate-400">Share with customer to complete recovery checkout</p>
+                  </div>
+                </div>
+                <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1 shadow-[0_0_10px_rgba(16,185,129,0.15)]">
+                  <CheckCircle2 className="w-3 h-3" /> LINK ACTIVE
+                </span>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center gap-2 pt-1">
+                <div className="flex-1 w-full flex items-center bg-white/[0.03] border border-white/[0.08] px-3 py-2 rounded-xl text-xs font-mono text-cyan-300 truncate">
+                  <span className="truncate">{c.paymentLinkUrl}</span>
+                </div>
+                <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(c.paymentLinkUrl);
+                      setLinkCopied(true);
+                      setTimeout(() => setLinkCopied(false), 2000);
+                    }}
+                    className="flex-1 sm:flex-none px-3 py-2 bg-white/[0.06] hover:bg-white/[0.1] text-white text-xs font-bold rounded-xl border border-white/[0.1] flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>{linkCopied ? 'Copied!' : 'Copy Link'}</span>
+                  </button>
+
+                  <button
+                    onClick={() => setShowCheckoutModal(true)}
+                    className="flex-1 sm:flex-none px-3.5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-600/25 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>Pay Now</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <AIDecisionCard
             aiDecision={ai || { decision: { action: c.recommendedAction, confidence: 0.85, reason: c.diagnosis || 'Automated analysis' } }}
             diagnosis={aiAnalysis?.diagnosis}

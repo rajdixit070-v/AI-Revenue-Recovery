@@ -407,11 +407,17 @@ router.post('/cases/:caseId/execute', async (req, res, next) => {
       payment,
     });
 
+    if (proposedAction === 'CREATE_PAYMENT_LINK' || proposedAction === 'SEND_PAYMENT_LINK') {
+      const linkUrl = result.razorpayResult?.short_url || `https://rzp.io/i/rec_${recoveryCase.caseId.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+      recoveryCase.paymentLinkUrl = linkUrl;
+      recoveryCase.paymentLinkId = result.razorpayResult?.id || `plink_${recoveryCase.caseId}`;
+    }
+
     // Advance status to IN_RECOVERY if not already terminal
     if (!['RECOVERED', 'CLOSED', 'EXPIRED'].includes(recoveryCase.status)) {
       recoveryCase.status = 'IN_RECOVERY';
-      await recoveryCase.save();
     }
+    await recoveryCase.save();
 
     res.json({
       status: 'success',
