@@ -270,11 +270,11 @@ export default function CaseDetailPage({ caseId, onNavigate }) {
             <>
               <button
                 onClick={() => setShowCheckoutModal(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-600/25 transition-all cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-600/25 transition-all cursor-pointer"
                 title="Opens live interactive Razorpay Test Mode checkout popup"
               >
                 <CreditCard className="w-4 h-4" />
-                <span>Open Razorpay Checkout</span>
+                <span>Test Payment with Razorpay</span>
               </button>
 
               <button
